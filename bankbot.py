@@ -366,34 +366,45 @@ def add_chat_message(role, content):
 
 def generate_fast_title(first_prompt):
     return (first_prompt[:30] + "...") if len(first_prompt) > 30 else first_prompt
+def generate_smart_title(first_prompt):
+    """Slow but smart title generation"""
+    try:
+        if not USE_OLLAMA: return (first_prompt[:25] + "..")
+        prompt = f"Summarize this into a 3-4 word title (no quotes): '{first_prompt}'"
+        payload = {"model": OLLAMA_MODEL, "prompt": prompt, "stream": False}
+        resp = requests.post(f"{OLLAMA_URL.rstrip('/')}/api/generate", json=payload, timeout=5)
+        if resp.status_code == 200:
+            return resp.json().get("response", "").strip().strip('"')
+    except: pass
+    return (first_prompt[:25] + "..")
 
 def save_current_chat(title_update=None):
-    if not st.session_state.chat_history: 
-        return
+    if not st.session_state.chat_history: return
     
+    # Generate ID if new
     if st.session_state.current_chat_id is None:
         st.session_state.current_chat_id = str(uuid.uuid4())
         first_msg = st.session_state.chat_history[0]['content']
+        # USE FAST TITLE INITIALLY (ZERO DELAY)
         title = title_update if title_update else generate_fast_title(first_msg)
         
         st.session_state.all_chats.insert(0, {
-            'id': st.session_state.current_chat_id, 
-            'title': title,
+            'id': st.session_state.current_chat_id, 'title': title,
             'messages': list(st.session_state.chat_history),
             'timestamp': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         })
     else:
+        # Update existing
         for chat in st.session_state.all_chats:
             if chat['id'] == st.session_state.current_chat_id:
                 chat['messages'] = list(st.session_state.chat_history)
                 chat['timestamp'] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                if title_update: 
-                    chat['title'] = title_update
+                if title_update: chat['title'] = title_update # Update title if requested
                 break
     
     if st.session_state.user_id:
         st.session_state.db[st.session_state.user_id]['chats'] = st.session_state.all_chats
-        save_data()
+        save_data()   
 
 def load_chat(chat_id):
     for chat in st.session_state.all_chats:
@@ -415,9 +426,24 @@ def delete_chat(chat_id):
         save_data()
 
 def process_transfer(recipient, amount):
+    """Process transfer with validation"""
+    
+    # Validate amount
+    amount_error = input_validator.validate_amount(amount, max_amount=50000.0)
+    if amount_error:
+        return False, amount_error
+    
+    # Sanitize recipient name
+    recipient = input_validator.sanitize_text(recipient)
+    if not recipient:
+        return False, "Recipient name is required"
+    
     user = st.session_state.db[st.session_state.user_id]
+    
     if amount > user['balance']:
         return False, "Insufficient funds."
+    
+    # Process transfer
     user['balance'] -= amount
     new_txn = {
         "date": datetime.now().strftime("%Y-%m-%d"),
@@ -428,8 +454,10 @@ def process_transfer(recipient, amount):
     }
     user['transactions'].insert(0, new_txn)
     user['history'].append(user['balance'])
+    
     save_data()
-    return True, "Transfer successful!"
+    return True, f"Transfer successful! Rs. {amount:,.2f} sent to {recipient}"
+    
 
 # ============================================================================
 # STREAMLIT CONFIG
@@ -750,120 +778,19 @@ if "current_chat_id" not in st.session_state:
     st.session_state.current_chat_id = None
 if "retry_prompt" not in st.session_state:
     st.session_state.retry_prompt = None
-# ----------------------------------------------------------------------------- 
-# 3. UTILS & OLLAMA HELPERS
-# ----------------------------------------------------------------------------- 
-
-def format_currency(amount):
-    return f"Rs. {amount:,.2f}"
-def add_chat_message(role, content):
-    st.session_state.chat_history.append({
-        "role": role, "content": content,
-        "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    })
-
-def generate_smart_title(first_prompt):
-    """Slow but smart title generation"""
-    try:
-        if not USE_OLLAMA: return (first_prompt[:25] + "..")
-        prompt = f"Summarize this into a 3-4 word title (no quotes): '{first_prompt}'"
-        payload = {"model": OLLAMA_MODEL, "prompt": prompt, "stream": False}
-        resp = requests.post(f"{OLLAMA_URL.rstrip('/')}/api/generate", json=payload, timeout=5)
-        if resp.status_code == 200:
-            return resp.json().get("response", "").strip().strip('"')
-    except: pass
-    return (first_prompt[:25] + "..")
-
-def generate_fast_title(first_prompt):
-    """Instant title generation (No delay)"""
-    return (first_prompt[:30] + "..") if len(first_prompt) > 30 else first_prompt
 
 
 
-def save_current_chat(title_update=None):
-    if not st.session_state.chat_history: return
-    
-    # Generate ID if new
-    if st.session_state.current_chat_id is None:
-        st.session_state.current_chat_id = str(uuid.uuid4())
-        first_msg = st.session_state.chat_history[0]['content']
-        # USE FAST TITLE INITIALLY (ZERO DELAY)
-        title = title_update if title_update else generate_fast_title(first_msg)
-        
-        st.session_state.all_chats.insert(0, {
-            'id': st.session_state.current_chat_id, 'title': title,
-            'messages': list(st.session_state.chat_history),
-            'timestamp': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        })
-    else:
-        # Update existing
-        for chat in st.session_state.all_chats:
-            if chat['id'] == st.session_state.current_chat_id:
-                chat['messages'] = list(st.session_state.chat_history)
-                chat['timestamp'] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                if title_update: chat['title'] = title_update # Update title if requested
-                break
-    
-    if st.session_state.user_id:
-        st.session_state.db[st.session_state.user_id]['chats'] = st.session_state.all_chats
-        save_data()    
 
-def load_chat(chat_id):
-    for chat in st.session_state.all_chats:
-        if chat['id'] == chat_id:
-            st.session_state.chat_history = list(chat['messages'])
-            st.session_state.current_chat_id = chat_id
-            return
 
-def start_new_chat():
-    st.session_state.chat_history = []
-    st.session_state.current_chat_id = None
 
-def delete_chat(chat_id):
-    st.session_state.all_chats = [c for c in st.session_state.all_chats if c['id'] != chat_id]
-    if st.session_state.current_chat_id == chat_id:
-        start_new_chat()
-
-def process_transfer(recipient, amount):
-    """Process transfer with validation"""
-    
-    # Validate amount
-    amount_error = input_validator.validate_amount(amount, max_amount=50000.0)
-    if amount_error:
-        return False, amount_error
-    
-    # Sanitize recipient name
-    recipient = input_validator.sanitize_text(recipient)
-    if not recipient:
-        return False, "Recipient name is required"
-    
-    user = st.session_state.db[st.session_state.user_id]
-    
-    if amount > user['balance']:
-        return False, "Insufficient funds."
-    
-    # Process transfer
-    user['balance'] -= amount
-    new_txn = {
-        "date": datetime.now().strftime("%Y-%m-%d"),
-        "desc": f"Transfer to {recipient}",
-        "cat": "Transfer",
-        "amt": -amount,
-        "type": "Debit"
-    }
-    user['transactions'].insert(0, new_txn)
-    user['history'].append(user['balance'])
-    
-    save_data()
-    return True, f"Transfer successful! Rs. {amount:,.2f} sent to {recipient}"
-    
 
 
 
 
 
 # ----------------------------------------------------------------------------- 
-# 4. LOGIN SCREEN
+# 3. LOGIN SCREEN
 # ----------------------------------------------------------------------------- 
 
 def login_screen():
@@ -1011,7 +938,7 @@ def login_screen():
         st.caption("🔒 Your connection is secure and encrypted. We never store passwords in plaintext.")
 
 # ----------------------------------------------------------------------------- 
-# 5. DASHBOARD SCREEN
+# 4. DASHBOARD SCREEN
 # ----------------------------------------------------------------------------- 
 
 def dashboard_screen():
