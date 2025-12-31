@@ -1,0 +1,7 @@
+.env
+bank_db.json
+__pycache__/
+*.pyc
+logs/
+.venv/
+venv/
