@@ -1,4 +1,5 @@
 import os
+import html
 import streamlit as st
 import pandas as pd
 import plotly.express as px
@@ -56,10 +57,6 @@ from security import (
 # Initialize security components
 password_hasher = PasswordHasher()
 session_manager = SessionManager(timeout_minutes=settings.SESSION_TIMEOUT_MINUTES)
-rate_limiter = RateLimiter(
-    max_attempts=settings.MAX_LOGIN_ATTEMPTS,
-    lockout_minutes=settings.LOCKOUT_MINUTES
-)
 input_validator = InputValidator()
 
 # Config
@@ -119,7 +116,7 @@ def load_data():
         "1234567890": {
             "name": "customer1",
             "hashed_pin": password_hasher.hash_password("0000"),  # Hashed version of 0000
-            "balance": 45750.50,
+            "balance": 55750.50,
             "type": "Premium Savings",
             "email": "john@email.com",
             "phone": "9876543210",
@@ -464,7 +461,7 @@ def process_transfer(recipient, amount):
 # ============================================================================
 
 st.set_page_config(
-    page_title="SecureBank",
+    page_title="BankBot",
     page_icon="💳",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -641,6 +638,22 @@ st.markdown("""
         transform:  translateY(-1px) ;
         box-shadow: 0 6px 20px rgba(0, 150, 255, 0.3) ;
     }
+    
+    [data-testid="stVerticalBlock"] .stButton button {
+        padding: 2px 2px !important; /* Minimal internal padding */
+        min-height: 35px !important;
+        height: auto !important;
+        width: 100% !important;
+        margin: 0 !important;
+        box-shadow: none !important; /* FIXED: Removes glow that causes overlap */
+        font-size: 14px !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    }
+
+    /* Ensure the sub-columns for confirm/cancel stay tight */
+    [data-testid="stVerticalBlock"] div[data-testid="column"] {
+        gap: 3px !important;
+    }
     /* INPUT FIELDS */
     .stTextInput input, .stNumberInput input, .stTextArea textarea {
         background-color: rgba(15, 23, 42, 0.8) ;
@@ -684,6 +697,7 @@ st.markdown("""
     [data-testid="stSidebar"] {
         background:  linear-gradient(180deg, #0f172a 0%, #1a2e4a 100%);
         border-right: 1px solid rgba(0, 217, 255, 0.2);
+        width: 60px;
     }
     
     [data-testid="stSidebar"] [data-testid="stBaseButton"] {
@@ -770,6 +784,13 @@ if "user_id" not in st.session_state:
     st.session_state.user_id = None
 if "session_data" not in st.session_state:
     st.session_state.session_data = None
+if "rate_limiter" not in st.session_state:
+    st.session_state.rate_limiter = RateLimiter(
+        max_attempts=settings.MAX_LOGIN_ATTEMPTS,
+        lockout_minutes=settings.LOCKOUT_MINUTES
+    )
+
+rate_limiter = st.session_state.rate_limiter    
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = []
 if "all_chats" not in st.session_state:
@@ -778,6 +799,8 @@ if "current_chat_id" not in st.session_state:
     st.session_state.current_chat_id = None
 if "retry_prompt" not in st.session_state:
     st.session_state.retry_prompt = None
+if "delete_confirm_id" not in st.session_state:
+    st.session_state.delete_confirm_id = None    
 
 
 
@@ -802,7 +825,7 @@ def login_screen():
         st.markdown("""
             <div style='text-align: center; margin-bottom: 30px;'>
                 <div style='font-size: 80px; margin-bottom: 10px;'>🏦</div>
-                <h1 style='color: #667eea; font-size: 3em; margin: 0;'>SecureBank</h1>
+                <h1 style='color: #667eea; font-size: 3em; margin: 0;'>BankBot</h1>
                 <p style='color: #a0aec0; font-size: 1.2em; margin-top: 10px;'>
                     Secure Banking • Powered by AI
                 </p>
@@ -962,7 +985,7 @@ def dashboard_screen():
     
     # Sidebar
     with st.sidebar:
-        st.title("🏦 SecureBank")
+        st.title("🏦 BankBot")
         st.write(f"**{user['name']}**")
         st.caption(f"Account: {st.session_state.user_id}")
         st.markdown("---")
@@ -998,60 +1021,216 @@ def dashboard_screen():
         st.write(datetime.now().strftime("%B %d, %Y"))
     
     # Tabs
-    tab1, tab2, tab3, tab4 = st.tabs(["📊 Overview", "📈 Analytics", "💸 Transfer", "💬 Assistant"])
+    tab1, tab2, tab3, tab4 = st.tabs(["💬 Assistant", "📊 Overview", "📈 Analytics", "💸 Transfer"])
     
     # TAB 1: Overview
-    with tab1:
-        col_card, col_stats = st.columns([1.5, 2.5])
-        with col_card:
-            st.markdown(f"""
-                <div class="bank-card">
-                    <div style="display:flex; justify-content:space-between;">
-                        <span>Current Balance</span>
-                        <span style="font-size:1.5em;">💳</span>
-                    </div>
-                    <h1 style="margin:10px 0;">{format_currency(user['balance'])}</h1>
-                    <div style="display:flex; justify-content:space-between; margin-top:20px;">
-                        <span>**** **** **** {st.session_state.user_id[-4:]}</span>
-                        <span>EXP 12/28</span>
-                    </div>
-                </div>
-            """, unsafe_allow_html=True)
-        
-        with col_stats:
-            m1, m2, m3 = st.columns(3)
-            df = pd.DataFrame(user['transactions'])
-            income = df[df['type'] == 'Credit']['amt'].sum()
-            expense = abs(df[df['type'] == 'Debit']['amt'].sum())
-            
-            m1.metric("Monthly Income", format_currency(income), "+12%")
-            m2.metric("Monthly Spend", format_currency(expense), "-5%")
-            m3.metric("Credit Score", user['credit_score'], "+15 pts")
-            
-            dates = pd.date_range(end=datetime.now(), periods=6).strftime("%b %d")
-            fig_trend = go.Figure(go.Scatter(x=dates, y=user['history'], fill='tozeroy', 
-                                           line=dict(color='#667eea', width=2)))
-            fig_trend.update_layout(margin=dict(l=0, r=0, t=0, b=0), height=80, 
-                                  paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)',
-                                  xaxis=dict(showgrid=False, visible=False), yaxis=dict(showgrid=False, visible=False))
-            st.plotly_chart(fig_trend, use_container_width=True, config={'displayModeBar': False})
-
-        st.subheader("Recent Activity")
-        st.dataframe(
-            df[['date', 'desc', 'cat', 'amt', 'type']],
-            use_container_width=True,
-            column_config={
-                "amt": st.column_config.NumberColumn("Amount", format="Rs. %.2f"),
-                "date": "Date",
-                "desc": "Description",
-                "cat": "Category",
-                "type": "Type"
-            },
-            hide_index=True
-        )
+    
     
     # TAB 2: Analytics
-    with tab2:
+    with tab1:
+        st.subheader("🤖 AI Banking Assistant")
+        if st.session_state.current_chat_id:
+            st.caption(f"Session: {st.session_state.current_chat_id[:8]}...")
+        else:
+            st.caption("New Conversation")
+        
+        left_col, center_col, right_col = st.columns([2.5, 4.5, 2])
+        
+        # LEFT COLUMN: Chat history
+        with left_col:
+            st.markdown("**Chats**")
+            if st.button("➕ New", key="new_left", use_container_width=False):
+                start_new_chat()
+                safe_rerun()
+            
+            st.markdown("---")
+            
+            with st.container(height=400):
+                if st.session_state.all_chats:
+                    for i, chat in enumerate(st.session_state.all_chats):
+                        label = f"🟢 {chat['title']}" if chat['id'] == st.session_state.current_chat_id else chat['title']
+                        chat_id = chat['id']
+                        c_btn, c_del = st.columns([4, 1])
+                        with c_btn:
+                            if st.button(label, key=f"load_{chat['id']}_{i}", use_container_width=True):
+                                load_chat(chat['id'])
+                                safe_rerun()
+                        with c_del:
+                # Check if this specific chat is currently being 'confirmed'
+                            if st.session_state.delete_confirm_id == chat_id:
+                                col_confirm, col_cancel = st.columns(2)
+                                with col_confirm:
+                                    if st.button("✅", key=f"conf_{chat_id}", help="Confirm Delete"):
+                                        delete_chat(chat_id)
+                                        st.session_state.delete_confirm_id = None
+                                        safe_rerun()
+                                with col_cancel:
+                                    if st.button("❌", key=f"canc_{chat_id}", help="Cancel"):
+                                        st.session_state.delete_confirm_id = None
+                                        safe_rerun()
+                            else:
+                                # Show initial delete button
+                                if st.button("🗑️", key=f"del_request_{chat_id}"):
+                                    st.session_state.delete_confirm_id = chat_id
+                                    safe_rerun()
+                else:
+                    st.caption("No history.")
+        
+        # CENTER COLUMN: Chat interface
+        with center_col:
+            top_cols = st.columns([1,2])
+            
+            
+            st.markdown("<br>", unsafe_allow_html=True)
+
+            # Chat container
+            chat_container = st.container()
+            with chat_container:
+                if not st.session_state.chat_history:
+                    st.info("👋 Try: 'Check balance', 'Show transactions', or 'Spending analysis'")
+                else:
+                    for i, msg in enumerate(st.session_state.chat_history):
+                        if msg["role"] == "user":
+                            c_msg, c_edit = st.columns([9, 1])
+                            with c_msg:
+                                st.markdown(f"""
+                                    <div class="chat-message-user">
+                                        <div class="chat-bubble-user">
+                                            {msg["content"]}
+                                            <div class="chat-timestamp">{msg['timestamp'].split()[1]}</div>
+                                        </div>
+                                    </div>
+                                """, unsafe_allow_html=True)
+                            with c_edit:
+                                with st.popover("✏️", use_container_width=True):
+                                    new_text = st.text_area("Edit message:", value=msg["content"], key=f"edit_{i}")
+                                    if st.button("Save & Retry", key=f"save_{i}"):
+                                        # 1. Truncate history
+                                        st.session_state.chat_history = st.session_state.chat_history[:i]
+                                        # 2. Set retry flag
+                                        st.session_state.retry_prompt = new_text
+                                        st.session_state.current_chat_id = st.session_state.current_chat_id # Keep ID
+                                        safe_rerun()
+                        else:
+                            st.markdown(f"""
+                                <div class="chat-message-assistant">
+                                    <div class="chat-bubble-assistant">
+                                        {msg["content"]}
+                                        <div class="chat-timestamp">{msg['timestamp'].split()[1]}</div>
+                                    </div>
+                                </div>
+                            """, unsafe_allow_html=True)
+            # Chat input
+            prompt = st.chat_input("Type a message...")
+            
+            # Handle retry prompt
+            if st.session_state.retry_prompt:
+                prompt = st.session_state.retry_prompt
+                st.session_state.retry_prompt = None
+                
+            if prompt:
+                # STEP 1: Validate query
+                is_valid, reason = is_banking_query(prompt)
+                
+                if not is_valid:
+                    # Rejected query - add refusal message
+                    add_chat_message("user", prompt)
+                    add_chat_message("assistant", reason)
+                    save_current_chat()
+                    safe_rerun()
+                
+                # STEP 2: Query is valid (either banking or greeting)
+                # Add user message
+                add_chat_message("user", prompt)
+                
+                # STEP 3: Try rule-based response first
+                rule_response = get_bot_response(prompt)
+
+                if rule_response != "NEED_OLLAMA":
+                    add_chat_message("assistant", rule_response)
+                    save_current_chat()
+                    safe_rerun()
+                else:
+                    # 🔥 OLLAMA SHOULD BE HERE
+                    strict_prompt = get_strict_banking_prompt(st.session_state.user_id, prompt)
+                    stream = call_ollama_stream(strict_prompt)
+
+                    resp_text = ""
+                    for chunk in stream:
+                        resp_text += chunk
+
+                    resp_text = validate_ollama_response(resp_text, prompt)
+                    add_chat_message("assistant", resp_text)
+                    save_current_chat()
+                    safe_rerun()
+                
+                # STEP 4: Use Ollama for complex queries
+                
+                    
+                    with chat_container:
+                        st.markdown(f"""
+                            <div class="chat-message-user">
+                                <div class="chat-bubble-user">{prompt}</div>
+                            </div>
+                        """, unsafe_allow_html=True)
+                        resp_ph = st.empty()
+                        
+                        strict_prompt = get_strict_banking_prompt(st.session_state.user_id, prompt)
+                        stream = call_ollama_stream(strict_prompt)
+                        
+                        resp_text = ""
+                        for chunk in stream:
+                            resp_text += chunk
+                            resp_ph.markdown(
+                                f"""
+                                <div class="chat-message-assistant">
+                                    <div class="chat-bubble-assistant">{html.escape(resp_text)}</div>
+                                </div>
+                                """,
+                                unsafe_allow_html=True
+                            )
+                        
+                        # STEP 5: Post-validation
+                        resp_text = validate_ollama_response(resp_text, prompt)
+                        
+                        add_chat_message("assistant", resp_text)
+                        save_current_chat()
+                        safe_rerun()
+            
+                    
+        # RIGHT COLUMN: Quick actions
+        with right_col:
+            st.markdown("**Quick Actions**")
+            if st.button("💳 Show Balance", key="quick_balance", use_container_width=True):
+                add_chat_message("user", "What is my balance?")
+                add_chat_message("assistant", get_bot_response("balance"))
+                save_current_chat()
+                safe_rerun()
+            
+            if st.button("📄 Transactions", key="quick_trans", use_container_width=True):
+                add_chat_message("user", "Show my recent transactions")
+                add_chat_message("assistant", get_bot_response("transactions"))
+                
+                save_current_chat()
+                safe_rerun()
+            
+            st.markdown("---")
+            st.markdown("**Suggestions**")
+            st.write("• How much did I spend?")
+            st.write("• Show transactions")
+            st.write("• Transfer money")
+            st.write("• Show profile")
+            
+            st.markdown("---")
+            st.markdown("**Export**")
+            if st.button("📥 Export Chat", key="export_chat", use_container_width=True):
+                if not st.session_state.chat_history:
+                    st.warning("No chat to export")
+                else:
+                    df_export = pd.DataFrame(st.session_state.chat_history)
+                    csv = df_export.to_csv(index=False).encode('utf-8')
+                    st.download_button("Download CSV", csv, file_name="chat_history.csv", mime="text/csv")
+    with tab3:
         st.markdown("### 📊 Financial Analytics Dashboard")
         
         df = pd.DataFrame(user['transactions'])
@@ -1256,7 +1435,7 @@ def dashboard_screen():
         )
     
     # TAB 3: Transfer
-    with tab3:
+    with tab4:
         st.markdown("### 💸 Quick Transfer")
         col_form, col_info = st.columns([1, 1])
         with col_form:
@@ -1280,189 +1459,54 @@ def dashboard_screen():
             st.info("**Transfer Limits:**\n\nDaily Limit: Rs. 50,000\n\nSecure transfers with 256-bit encryption.")
     
     # TAB 4: Assistant
-    with tab4:
-        st.subheader("🤖 AI Banking Assistant")
-        if st.session_state.current_chat_id:
-            st.caption(f"Session: {st.session_state.current_chat_id[:8]}...")
-        else:
-            st.caption("New Conversation")
+    with tab2:
+        col_card, col_stats = st.columns([1.5, 2.5])
+        with col_card:
+            st.markdown(f"""
+                <div class="bank-card">
+                    <div style="display:flex; justify-content:space-between;">
+                        <span>Current Balance</span>
+                        <span style="font-size:1.5em;">💳</span>
+                    </div>
+                    <h1 style="margin:10px 0;">{format_currency(user['balance'])}</h1>
+                    <div style="display:flex; justify-content:space-between; margin-top:20px;">
+                        <span>**** **** **** {st.session_state.user_id[-4:]}</span>
+                        <span>EXP 12/28</span>
+                    </div>
+                </div>
+            """, unsafe_allow_html=True)
         
-        left_col, center_col, right_col = st.columns([2, 4.5, 2])
-        
-        # LEFT COLUMN: Chat history
-        with left_col:
-            st.markdown("**Chats**")
-            if st.button("➕ New", key="new_left", use_container_width=False):
-                start_new_chat()
-                safe_rerun()
+        with col_stats:
+            m1, m2, m3 = st.columns(3)
+            df = pd.DataFrame(user['transactions'])
+            income = df[df['type'] == 'Credit']['amt'].sum()
+            expense = abs(df[df['type'] == 'Debit']['amt'].sum())
             
-            st.markdown("---")
+            m1.metric("Monthly Income", format_currency(income), "+12%")
+            m2.metric("Monthly Spend", format_currency(expense), "-5%")
+            m3.metric("Credit Score", user['credit_score'], "+15 pts")
             
-            with st.container(height=400):
-                if st.session_state.all_chats:
-                    for i, chat in enumerate(st.session_state.all_chats):
-                        label = f"🟢 {chat['title']}" if chat['id'] == st.session_state.current_chat_id else chat['title']
-                        
-                        c_btn, c_del = st.columns([4, 1])
-                        with c_btn:
-                            if st.button(label, key=f"load_{chat['id']}_{i}", use_container_width=True):
-                                load_chat(chat['id'])
-                                safe_rerun()
-                        with c_del:
-                            if st.button("🗑️", key=f"del_{chat['id']}_{i}"):
-                                delete_chat(chat['id'])
-                                safe_rerun()
-                else:
-                    st.caption("No history.")
-        
-        # CENTER COLUMN: Chat interface
-        with center_col:
-            top_cols = st.columns([1,2])
-            
-            with top_cols[0]:
-                use_ollama = st.checkbox("Ollama", value=USE_OLLAMA, key="ollama_toggle")
-            
-            st.markdown("<br>", unsafe_allow_html=True)
+            dates = pd.date_range(end=datetime.now(), periods=6).strftime("%b %d")
+            fig_trend = go.Figure(go.Scatter(x=dates, y=user['history'], fill='tozeroy', 
+                                           line=dict(color='#667eea', width=2)))
+            fig_trend.update_layout(margin=dict(l=0, r=0, t=0, b=0), height=80, 
+                                  paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)',
+                                  xaxis=dict(showgrid=False, visible=False), yaxis=dict(showgrid=False, visible=False))
+            st.plotly_chart(fig_trend, use_container_width=True, config={'displayModeBar': False})
 
-            # Chat container
-            chat_container = st.container()
-            with chat_container:
-                if not st.session_state.chat_history:
-                    st.info("👋 Try: 'Check balance', 'Show transactions', or 'Spending analysis'")
-                else:
-                    for i, msg in enumerate(st.session_state.chat_history):
-                        if msg["role"] == "user":
-                            c_msg, c_edit = st.columns([9, 1])
-                            with c_msg:
-                                st.markdown(f"""
-                                    <div class="chat-message-user">
-                                        <div class="chat-bubble-user">
-                                            {msg["content"]}
-                                            <div class="chat-timestamp">{msg['timestamp'].split()[1]}</div>
-                                        </div>
-                                    </div>
-                                """, unsafe_allow_html=True)
-                            with c_edit:
-                                with st.popover("✏️", use_container_width=True):
-                                    new_text = st.text_area("Edit message:", value=msg["content"], key=f"edit_{i}")
-                                    if st.button("Save & Retry", key=f"save_{i}"):
-                                        # 1. Truncate history
-                                        st.session_state.chat_history = st.session_state.chat_history[:i]
-                                        # 2. Set retry flag
-                                        st.session_state.retry_prompt = new_text
-                                        st.session_state.current_chat_id = st.session_state.current_chat_id # Keep ID
-                                        safe_rerun()
-                        else:
-                            st.markdown(f"""
-                                <div class="chat-message-assistant">
-                                    <div class="chat-bubble-assistant">
-                                        {msg["content"]}
-                                        <div class="chat-timestamp">{msg['timestamp'].split()[1]}</div>
-                                    </div>
-                                </div>
-                            """, unsafe_allow_html=True)
-            # Chat input
-            prompt = st.chat_input("Type a message...")
-            
-            # Handle retry prompt
-            if st.session_state.retry_prompt:
-                prompt = st.session_state.retry_prompt
-                st.session_state.retry_prompt = None
-                
-            if prompt:
-                # STEP 1: Validate query
-                is_valid, reason = is_banking_query(prompt)
-                
-                if not is_valid:
-                    # Rejected query - add refusal message
-                    add_chat_message("user", prompt)
-                    add_chat_message("assistant", reason)
-                    save_current_chat()
-                    safe_rerun()
-                
-                # STEP 2: Query is valid (either banking or greeting)
-                # Add user message
-                add_chat_message("user", prompt)
-                
-                # STEP 3: Try rule-based response first
-                rule_response = get_bot_response(prompt)
-                
-                if rule_response != "NEED_OLLAMA":
-                    # Rule-based response worked (includes greetings!)
-                    add_chat_message("assistant", rule_response)
-                    save_current_chat()
-                    safe_rerun()
-                
-                # STEP 4: Use Ollama for complex queries
-                if use_ollama:
-                    save_current_chat()
-                    
-                    with chat_container:
-                        st.markdown(f"""
-                            <div class="chat-message-user">
-                                <div class="chat-bubble-user">{prompt}</div>
-                            </div>
-                        """, unsafe_allow_html=True)
-                        resp_ph = st.empty()
-                        
-                        strict_prompt = get_strict_banking_prompt(st.session_state.user_id, prompt)
-                        stream = call_ollama_stream(strict_prompt)
-                        
-                        resp_text = ""
-                        for chunk in stream:
-                            resp_text += chunk
-                            resp_ph.markdown(
-                                f"""
-                                <div class="chat-message-assistant">
-                                    <div class="chat-bubble-assistant">{resp_text}</div>
-                                </div>
-                                """,
-                                unsafe_allow_html=True
-                            )
-                        
-                        # STEP 5: Post-validation
-                        resp_text = validate_ollama_response(resp_text, prompt)
-                        
-                        add_chat_message("assistant", resp_text)
-                        save_current_chat()
-                        safe_rerun()
-                else:
-                    # Ollama disabled, use fallback
-                    add_chat_message("assistant", "Please enable Ollama for complex queries.")
-                    save_current_chat()
-                    safe_rerun()
-                    
-        # RIGHT COLUMN: Quick actions
-        with right_col:
-            st.markdown("**Quick Actions**")
-            if st.button("💳 Show Balance", key="quick_balance", use_container_width=True):
-                add_chat_message("user", "What is my balance?")
-                add_chat_message("assistant", get_bot_response("balance"))
-                save_current_chat()
-                safe_rerun()
-            
-            if st.button("📄 Transactions", key="quick_trans", use_container_width=True):
-                add_chat_message("user", "Show my recent transactions")
-                add_chat_message("assistant", get_bot_response("transactions"))
-                save_current_chat()
-                safe_rerun()
-            
-            st.markdown("---")
-            st.markdown("**Suggestions**")
-            st.write("• How much did I spend?")
-            st.write("• Show transactions")
-            st.write("• Transfer money")
-            st.write("• Show profile")
-            
-            st.markdown("---")
-            st.markdown("**Export**")
-            if st.button("📥 Export Chat", key="export_chat", use_container_width=True):
-                if not st.session_state.chat_history:
-                    st.warning("No chat to export")
-                else:
-                    df_export = pd.DataFrame(st.session_state.chat_history)
-                    csv = df_export.to_csv(index=False).encode('utf-8')
-                    st.download_button("Download CSV", csv, file_name="chat_history.csv", mime="text/csv")
+        st.subheader("Recent Activity")
+        st.dataframe(
+            df[['date', 'desc', 'cat', 'amt', 'type']],
+            use_container_width=True,
+            column_config={
+                "amt": st.column_config.NumberColumn("Amount", format="Rs. %.2f"),
+                "date": "Date",
+                "desc": "Description",
+                "cat": "Category",
+                "type": "Type"
+            },
+            hide_index=True
+        )
 # ----------------------------------------------------------------------------- 
 # 6. MAIN EXECUTION
 # ----------------------------------------------------------------------------- 
@@ -1472,3 +1516,7 @@ if __name__ == "__main__":
         dashboard_screen()
     else:
         login_screen()
+
+
+
+ 

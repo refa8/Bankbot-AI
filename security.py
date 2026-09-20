@@ -60,49 +60,53 @@ class SessionManager:
 
 
 class RateLimiter:
-    """Rate limiting for login attempts"""
-    
-    def __init__(self, max_attempts: int = 5, lockout_minutes: int = 15):
+    def __init__(self, max_attempts=3, lockout_minutes=15):
         self.max_attempts = max_attempts
         self.lockout_minutes = lockout_minutes
-        self.attempts = defaultdict(list)
+        self.attempts = {}  # {user_id: [timestamp1, timestamp2, ...]}
     
-    def record_attempt(self, identifier: str):
-        """Record a login attempt"""
-        now = datetime.now()
-        self.attempts[identifier].append(now)
-        # Clean old attempts
-        cutoff = now - timedelta(minutes=self.lockout_minutes)
-        self.attempts[identifier] = [
-            t for t in self.attempts[identifier] if t > cutoff
+    def record_attempt(self, user_id: str):
+        """Record a failed login attempt"""
+        current_time = datetime.now()
+        
+        if user_id not in self.attempts:
+            self.attempts[user_id] = []
+        
+        # Add current attempt
+        self.attempts[user_id].append(current_time)
+        
+        # Clean old attempts (older than lockout period)
+        cutoff_time = current_time - timedelta(minutes=self.lockout_minutes)
+        self.attempts[user_id] = [
+            t for t in self.attempts[user_id] if t > cutoff_time
         ]
     
-    def is_locked_out(self, identifier: str) -> Tuple[bool, Optional[str]]:
-        """Check if identifier is locked out"""
-        now = datetime.now()
-        cutoff = now - timedelta(minutes=self.lockout_minutes)
+    def is_locked_out(self, user_id: str) -> tuple[bool, str]:
+        """Check if user is locked out"""
+        if user_id not in self.attempts:
+            return False, ""
         
-        # Clean old attempts
-        self.attempts[identifier] = [
-            t for t in self.attempts[identifier] if t > cutoff
+        current_time = datetime.now()
+        cutoff_time = current_time - timedelta(minutes=self.lockout_minutes)
+        
+        # Remove old attempts
+        self.attempts[user_id] = [
+            t for t in self.attempts[user_id] if t > cutoff_time
         ]
         
-        attempt_count = len(self.attempts[identifier])
+        # Check if locked
+        if len(self.attempts[user_id]) >= self.max_attempts:
+            oldest_attempt = min(self.attempts[user_id])
+            unlock_time = oldest_attempt + timedelta(minutes=self.lockout_minutes)
+            remaining = (unlock_time - current_time).seconds // 60
+            return True, f"Account locked. Try again in {remaining} minute(s)."
         
-        if attempt_count >= self.max_attempts:
-            if self.attempts[identifier]:
-                unlock_time = self.attempts[identifier][0] + timedelta(minutes=self.lockout_minutes)
-                remaining = unlock_time - now
-                minutes_left = max(0, remaining.seconds // 60)
-                return True, f"Too many failed attempts. Try again in {minutes_left} minutes."
-            return True, "Account temporarily locked."
-        
-        return False, None
+        return False, ""
     
-    def reset_attempts(self, identifier: str):
-        """Reset attempts for identifier"""
-        if identifier in self.attempts:
-            del self.attempts[identifier]
+    def reset_attempts(self, user_id: str):
+        """Reset attempts after successful login"""
+        if user_id in self.attempts:
+            self.attempts[user_id] = []
 
 
 class InputValidator:
