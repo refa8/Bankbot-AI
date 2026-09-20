@@ -37,7 +37,11 @@ from security import (
     InputValidator
 )
 from app.utils.formatting import format_currency, generate_fast_title
-from app.services.query_policy import is_banking_query, validate_ollama_response
+from app.services.query_policy import (
+    classify_rule_intent,
+    is_banking_query,
+    validate_ollama_response,
+)
 
 # Initialize security components
 password_hasher = PasswordHasher()
@@ -256,10 +260,10 @@ def call_ollama_stream(prompt):
 
 def get_bot_response(prompt: str) -> str:
     """Fast rule-based responses for common queries"""
-    prompt_lower = prompt.lower()
     user = st.session_state.db.get(st.session_state.user_id, {})
-    
-    if any(w in prompt_lower for w in ["balance", "how much money", "fund"]):
+    intent = classify_rule_intent(prompt)
+
+    if intent == "balance":
         import random
         responses = [
             f"Right now, you have **{format_currency(user.get('balance',0))}** in your {user.get('type','account')} account.",
@@ -267,42 +271,41 @@ def get_bot_response(prompt: str) -> str:
             f"Let me check... You currently have **{format_currency(user.get('balance',0))}** available.",
         ]
         return random.choice(responses) + f"\n\n💳 Credit Score: {user.get('credit_score','N/A')}"
-    
-    elif any(w in prompt_lower for w in ["transaction", "history", "recent", "last"]):
+
+    if intent == "transactions":
         trans = user.get('transactions', [])[:3]
         msg = f"Here are your last {len(trans)} transactions:\n\n"
         for t in trans:
             emoji = "✅" if t['type'] == 'Credit' else "💸"
             msg += f"{emoji} **{t['date']}** - {t['desc']}\n   Amount: {format_currency(t['amt'])} | Category: {t['cat']}\n\n"
         return msg
-    
-    elif any(w in prompt_lower for w in ["spend", "expense", "analytics"]):
+
+    if intent == "spend":
         df = pd.DataFrame(user.get('transactions', []))
         debits = df[df['type'] == 'Debit'].copy() if not df.empty else pd.DataFrame()
         total_spent = abs(debits['amt'].sum()) if not debits.empty else 0
         avg_transaction = abs(debits['amt'].mean()) if not debits.empty else 0
         most_spent_cat = debits.groupby('cat')['amt'].sum().abs().idxmax() if (not debits.empty and len(debits)>0) else "N/A"
         return f"📊 **Spending Analysis:**\n\n💰 Total Spent: **{format_currency(total_spent)}**\n📈 Average Transaction: **{format_currency(avg_transaction)}**\n🎯 Top Category: **{most_spent_cat}**"
-    
-    elif any(w in prompt_lower for w in ["profile", "account", "details", "info"]):
+
+    if intent == "profile":
         return f"👤 **Your Profile:**\n\n• Name: {user.get('name')}\n• Account: {st.session_state.user_id}\n• Email: {user.get('email')}\n• Phone: {user.get('phone')}\n• Type: {user.get('type')}\n• Balance: {format_currency(user.get('balance',0))}\n• Credit Score: {user.get('credit_score')} ⭐"
-    
-    elif any(w in prompt_lower for w in ["transfer", "send", "pay"]):
+
+    if intent == "transfer":
         return f"💸 **Money Transfer Guide:**\n\nGo to the **Transfer tab** to send money securely.\n\nCurrent balance: {format_currency(user.get('balance',0))}\nDaily limit: Rs. 50,000 🔒"
-    
-    elif any(w in prompt_lower for w in ["hi", "hello", "hey"]):
+
+    if intent == "greeting":
         hour = datetime.now().hour
         greeting = "Good morning" if hour < 12 else "Good afternoon" if hour < 18 else "Good evening"
         return f"{greeting} {user.get('name','User').split()[0]}! 👋\n\nHow can I help you today?"
-    
-    elif any(w in prompt_lower for w in ["bye", "goodbye"]):
+
+    if intent == "goodbye":
         return "Goodbye! Stay secure! 👋"
-    
-    elif any(w in prompt_lower for w in ["help", "what can you", "what do you do ","who are you"]):
+
+    if intent == "help":
         return f"🤖 **I'm your AI Banking Assistant!**\n\nI can help you with:\n• Check Balance\n• View Transactions\n• Spending Analysis\n• Account Info\n• Transfers\n\nCurrent balance: {format_currency(user.get('balance',0))}"
-    
-    else:
-        return "NEED_OLLAMA"  # Signal that Ollama is needed
+
+    return "NEED_OLLAMA"  # Signal that Ollama is needed
 
 # ============================================================================
 # CHAT FUNCTIONS
