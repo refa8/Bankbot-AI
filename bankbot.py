@@ -26,23 +26,6 @@ SECUREBANK OFFICIAL POLICIES:
 7. FIXED DEPOSITS: 6.5% for 1 year, 7.2% for 3 years (Senior citizens +0.5%).
 """
 
-RESTRICTED_TOPICS = {
-    'technology': ['coding', 'programming', 'python', 'javascript', 'html', 'css', 'software', 'computer', 'algorithm', 'debug'],
-    'general_knowledge': ['history', 'politics', 'geography', 'science', 'physics', 'chemistry', 'biology', 'math', 'capital'],
-    'entertainment': ['joke', 'riddle', 'story', 'movie', 'film', 'music', 'song', 'game', 'meme'],
-    'lifestyle': ['cooking', 'recipe', 'fashion', 'travel', 'sport', 'fitness', 'exercise', 'workout'],
-    'other': ['weather', 'news', 'celebrity', 'astrology', 'horoscope', 'poem', 'essay']
-}
-
-BANKING_KEYWORDS = {
-    'account': ['balance', 'account', 'statement', 'profile', 'details', 'info', 'summary'],
-    'transactions': ['transaction', 'history', 'payment', 'transfer', 'sent', 'received', 'recent', 'last'],
-    'services': ['loan', 'credit', 'debit', 'card', 'interest', 'savings', 'deposit', 'fixed', 'fd'],
-    'operations': ['send', 'pay', 'withdraw', 'deposit', 'transfer', 'upi', 'money'],
-    'queries': ['branch', 'hours', 'contact', 'support', 'help', 'limit', 'policy', 'rate', 'fee'],
-    'financial': ['spend', 'expense', 'income', 'budget', 'investment', 'portfolio']
-}
-
 # # ============================================================================
 # # CONFIG
 # # ============================================================================
@@ -53,6 +36,8 @@ from security import (
     RateLimiter, 
     InputValidator
 )
+from app.utils.formatting import format_currency, generate_fast_title
+from app.services.query_policy import is_banking_query, validate_ollama_response
 
 # Initialize security components
 password_hasher = PasswordHasher()
@@ -160,76 +145,6 @@ def save_data():
         json.dump(st.session_state.db, f, indent=4)
 
 # ============================================================================
-# VALIDATION FUNCTIONS
-# ============================================================================
-
-def is_banking_query(prompt: str) -> tuple[bool, str]:
-    """
-    Validates if a query is banking-related.
-    Returns: (is_valid, reason/message)
-    """
-    prompt_lower = prompt.lower()
-    
-    # 1. Check for restricted topics (DENY LIST)
-    small_talk = ['hi', 'hello', 'hey', 'how are you', 'how do you do', 
-    'who are you', 'what can you do', 'thanks', 'thank you',
-    'good morning', 'good evening', 'nice to meet you']
-    if any(phrase in prompt_lower for phrase in small_talk):
-        return True, "conversation"
-    
-    for category, keywords in RESTRICTED_TOPICS.items():
-        for keyword in keywords:
-            if keyword in prompt_lower:
-                return False, "I apologize, but I can only assist with banking and financial queries."
-    
-    # 2. Check for banking keywords (ALLOW LIST)
-    banking_match = False
-    for category, keywords in BANKING_KEYWORDS.items():
-        if any(word in prompt_lower for word in keywords):
-            banking_match = True
-            break
-    
-    # 3. Allow greetings and farewells
-    
-    # 4. If no banking keywords found, reject
-    if not banking_match:
-        return False, "I can only assist with banking-related questions about your account, transactions, transfers, loans, and other financial services."
-    
-    return True, "valid banking query"
-
-def validate_ollama_response(response: str, original_query: str) -> str:
-    """
-    Post-validation: Check if Ollama's response stayed on-topic.
-    Returns: cleaned response or refusal message
-    """
-    response_lower = response.lower()
-    
-    # Check if response contains non-banking content indicators
-    off_topic_indicators = [
-        'here is a python script',
-        'here\'s some code',
-        'def ', 'function(',
-        'import ',
-        'recipe for',
-        'ingredients:',
-        'world war',
-        'the capital of',
-        'once upon a time'
-    ]
-    
-    if any(indicator in response_lower for indicator in off_topic_indicators):
-        return "I apologize, but I can only assist with banking and financial queries."
-    
-    # If response is suspiciously generic/long and doesn't mention banking terms
-    banking_terms = ['account', 'balance', 'transaction', 'transfer', 'bank', 'credit', 'debit', 'loan', 'deposit']
-    has_banking_term = any(term in response_lower for term in banking_terms)
-    
-    if len(response) > 800 and not has_banking_term:
-        return "I apologize, but I can only assist with banking and financial queries."
-    
-    return response
-
-# ============================================================================
 # OLLAMA FUNCTIONS
 # ============================================================================
 
@@ -264,7 +179,7 @@ USER QUESTION: {user_query}
 YOUR RESPONSE (banking-only, max 300 words):"""
 
 def call_ollama_stream(prompt):
-    """Stream response from Ollama"""
+    """Yield validated response chunks from the configured Ollama service."""
     try:
         payload = {
             "model": OLLAMA_MODEL, 
@@ -283,15 +198,57 @@ def call_ollama_stream(prompt):
             timeout=OLLAMA_TIMEOUT
         ) as resp:
             resp.raise_for_status()
+            received_response = False
+            completed = False
             for line in resp.iter_lines():
-                if line:
+                if not line:
+                    continue
+
+                try:
                     obj = json.loads(line.decode("utf-8"))
-                    if obj.get("done"): 
-                        break
-                    if obj.get("response"): 
-                        yield obj.get("response")
-    except Exception as e: 
-        yield f"[System Error: Unable to connect to AI service]"
+                except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+                    raise RuntimeError("The AI service returned an invalid response.") from exc
+
+                if not isinstance(obj, dict):
+                    raise RuntimeError("The AI service returned an invalid response.")
+
+                if obj.get("error"):
+                    error_text = str(obj["error"])
+                    if "model" in error_text.lower() and "not found" in error_text.lower():
+                        raise RuntimeError(
+                            f"The configured AI model ({OLLAMA_MODEL}) is unavailable. "
+                            "Please contact support or try again later."
+                        )
+                    raise RuntimeError("The AI service could not generate a response. Please try again later.")
+
+                chunk = obj.get("response", "")
+                if chunk:
+                    if not isinstance(chunk, str):
+                        raise RuntimeError("The AI service returned an invalid response.")
+                    received_response = True
+                    yield chunk
+
+                if obj.get("done"):
+                    completed = True
+                    break
+
+            if not completed:
+                raise RuntimeError("The AI response ended unexpectedly. Please try again.")
+            if not received_response:
+                raise RuntimeError("The AI service returned an empty response. Please try again.")
+    except requests.exceptions.Timeout as exc:
+        raise RuntimeError("The AI service took too long to respond. Please try again.") from exc
+    except requests.exceptions.ConnectionError as exc:
+        raise RuntimeError("The AI service is currently unavailable. Please try again later.") from exc
+    except requests.exceptions.HTTPError as exc:
+        if exc.response is not None and exc.response.status_code == 404:
+            raise RuntimeError(
+                f"The configured AI model ({OLLAMA_MODEL}) is unavailable. "
+                "Please contact support or try again later."
+            ) from exc
+        raise RuntimeError("The AI service is currently unavailable. Please try again later.") from exc
+    except requests.exceptions.RequestException as exc:
+        raise RuntimeError("The AI service is currently unavailable. Please try again later.") from exc
 
 # ============================================================================
 # RULE-BASED RESPONSES
@@ -351,9 +308,6 @@ def get_bot_response(prompt: str) -> str:
 # CHAT FUNCTIONS
 # ============================================================================
 
-def format_currency(amount):
-    return f"Rs. {amount:,.2f}"
-
 def add_chat_message(role, content):
     st.session_state.chat_history.append({
         "role": role, 
@@ -361,8 +315,6 @@ def add_chat_message(role, content):
         "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     })
 
-def generate_fast_title(first_prompt):
-    return (first_prompt[:30] + "...") if len(first_prompt) > 30 else first_prompt
 def generate_smart_title(first_prompt):
     """Slow but smart title generation"""
     try:
@@ -1093,11 +1045,13 @@ def dashboard_screen():
                         if msg["role"] == "user":
                             c_msg, c_edit = st.columns([9, 1])
                             with c_msg:
+                                safe_content = html.escape(str(msg["content"])).replace("\n", "<br>")
+                                safe_timestamp = html.escape(str(msg["timestamp"]).split()[1])
                                 st.markdown(f"""
                                     <div class="chat-message-user">
                                         <div class="chat-bubble-user">
-                                            {msg["content"]}
-                                            <div class="chat-timestamp">{msg['timestamp'].split()[1]}</div>
+                                            {safe_content}
+                                            <div class="chat-timestamp">{safe_timestamp}</div>
                                         </div>
                                     </div>
                                 """, unsafe_allow_html=True)
@@ -1112,11 +1066,13 @@ def dashboard_screen():
                                         st.session_state.current_chat_id = st.session_state.current_chat_id # Keep ID
                                         safe_rerun()
                         else:
+                            safe_content = html.escape(str(msg["content"])).replace("\n", "<br>")
+                            safe_timestamp = html.escape(str(msg["timestamp"]).split()[1])
                             st.markdown(f"""
                                 <div class="chat-message-assistant">
                                     <div class="chat-bubble-assistant">
-                                        {msg["content"]}
-                                        <div class="chat-timestamp">{msg['timestamp'].split()[1]}</div>
+                                        {safe_content}
+                                        <div class="chat-timestamp">{safe_timestamp}</div>
                                     </div>
                                 </div>
                             """, unsafe_allow_html=True)
@@ -1152,47 +1108,45 @@ def dashboard_screen():
                     safe_rerun()
                 else:
                     # 🔥 OLLAMA SHOULD BE HERE
-                    strict_prompt = get_strict_banking_prompt(st.session_state.user_id, prompt)
-                    stream = call_ollama_stream(strict_prompt)
-
-                    resp_text = ""
-                    for chunk in stream:
-                        resp_text += chunk
-
-                    resp_text = validate_ollama_response(resp_text, prompt)
-                    add_chat_message("assistant", resp_text)
-                    save_current_chat()
-                    safe_rerun()
-                
-                # STEP 4: Use Ollama for complex queries
-                
-                    
                     with chat_container:
+                        safe_prompt = html.escape(prompt).replace("\n", "<br>")
                         st.markdown(f"""
                             <div class="chat-message-user">
-                                <div class="chat-bubble-user">{prompt}</div>
+                                <div class="chat-bubble-user">{safe_prompt}</div>
                             </div>
                         """, unsafe_allow_html=True)
                         resp_ph = st.empty()
-                        
-                        strict_prompt = get_strict_banking_prompt(st.session_state.user_id, prompt)
-                        stream = call_ollama_stream(strict_prompt)
-                        
-                        resp_text = ""
-                        for chunk in stream:
-                            resp_text += chunk
-                            resp_ph.markdown(
-                                f"""
-                                <div class="chat-message-assistant">
-                                    <div class="chat-bubble-assistant">{html.escape(resp_text)}</div>
-                                </div>
-                                """,
-                                unsafe_allow_html=True
-                            )
-                        
-                        # STEP 5: Post-validation
-                        resp_text = validate_ollama_response(resp_text, prompt)
-                        
+
+                        try:
+                            strict_prompt = get_strict_banking_prompt(st.session_state.user_id, prompt)
+                            resp_text = ""
+                            for chunk in call_ollama_stream(strict_prompt):
+                                resp_text += chunk
+                                safe_response = html.escape(resp_text).replace("\n", "<br>")
+                                resp_ph.markdown(
+                                    f"""
+                                    <div class="chat-message-assistant">
+                                        <div class="chat-bubble-assistant">{safe_response}</div>
+                                    </div>
+                                    """,
+                                    unsafe_allow_html=True
+                                )
+
+                            resp_text = validate_ollama_response(resp_text, prompt)
+                        except RuntimeError as exc:
+                            resp_text = str(exc)
+                        except Exception:
+                            resp_text = "The AI service encountered an unexpected error. Please try again later."
+
+                        safe_response = html.escape(resp_text).replace("\n", "<br>")
+                        resp_ph.markdown(
+                            f"""
+                            <div class="chat-message-assistant">
+                                <div class="chat-bubble-assistant">{safe_response}</div>
+                            </div>
+                            """,
+                            unsafe_allow_html=True
+                        )
                         add_chat_message("assistant", resp_text)
                         save_current_chat()
                         safe_rerun()
