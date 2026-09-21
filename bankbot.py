@@ -36,7 +36,12 @@ from security import (
     RateLimiter, 
     InputValidator
 )
-from app.utils.formatting import format_currency, generate_fast_title
+from app.utils.formatting import (
+    format_currency,
+    generate_fast_title,
+    history_trend_xy,
+    safe_transactions_frame,
+)
 from app.services.query_policy import (
     classify_rule_intent,
     is_banking_query,
@@ -1190,14 +1195,17 @@ def dashboard_screen():
     with tab3:
         st.markdown("### 📊 Financial Analytics Dashboard")
         
-        df = pd.DataFrame(user['transactions'])
+        df = safe_transactions_frame(user.get('transactions', []))
+        history = user.get('history', []) if isinstance(user.get('history', []), list) else []
         
         col1, col2, col3, col4 = st.columns(4)
         
-        total_income = df[df['type'] == 'Credit']['amt'].sum()
-        total_expense = abs(df[df['type'] == 'Debit']['amt'].sum())
+        total_income = df[df['type'] == 'Credit']['amt'].sum() if not df.empty else 0
+        total_expense = abs(df[df['type'] == 'Debit']['amt'].sum()) if not df.empty else 0
         net_savings = total_income - total_expense
-        avg_transaction = df['amt'].abs().mean()
+        avg_transaction = df['amt'].abs().mean() if not df.empty else 0
+        if pd.isna(avg_transaction):
+            avg_transaction = 0
         
         col1.metric("💰 Total Income", format_currency(total_income), "This Month")
         col2.metric("💸 Total Expenses", format_currency(total_expense), delta="-15%", delta_color="inverse")
@@ -1212,38 +1220,44 @@ def dashboard_screen():
             st.markdown("<div class='stat-card'>", unsafe_allow_html=True)
             st.subheader("🎯 Spending by Category")
             
-            spending = df[df['type'] == 'Debit'].copy()
-            spending['amt'] = spending['amt'].abs()
-            category_totals = spending.groupby('cat')['amt'].sum().reset_index()
+            spending = df[df['type'] == 'Debit'].copy() if not df.empty else pd.DataFrame(columns=df.columns)
+            if not spending.empty:
+                spending['amt'] = spending['amt'].abs()
+                category_totals = spending.groupby('cat')['amt'].sum().reset_index()
+            else:
+                category_totals = pd.DataFrame(columns=['cat', 'amt'])
             
-            fig_pie = px.pie(
-                category_totals, 
-                values='amt', 
-                names='cat',
-                hole=0.5,
-                color_discrete_sequence=['#667eea', '#764ba2', '#f093fb', '#f5576c', '#4facfe']
-            )
-            fig_pie.update_traces(
-                textposition='outside',
-                textinfo='label+percent',
-                marker=dict(line=dict(color='#0e1117', width=2))
-            )
-            fig_pie.update_layout(
-                paper_bgcolor='rgba(0,0,0,0)',
-                plot_bgcolor='rgba(0,0,0,0)',
-                font=dict(color='white', size=12),
-                showlegend=True,
-                legend=dict(orientation="h", yanchor="bottom", y=-0.2, xanchor="center", x=0.5),
-                height=350
-            )
-            st.plotly_chart(fig_pie, use_container_width=True)
-            
-            st.markdown("**Category Breakdown:**")
-            category_table = category_totals.sort_values('amt', ascending=False)
-            category_table['Percentage'] = (category_table['amt'] / category_table['amt'].sum() * 100).round(1)
-            category_table['amt'] = category_table['amt'].apply(lambda x: format_currency(x))
-            category_table.columns = ['Category', 'Amount', 'Share (%)']
-            st.dataframe(category_table, hide_index=True, use_container_width=True)
+            if category_totals.empty:
+                st.info("No spending data to display.")
+            else:
+                fig_pie = px.pie(
+                    category_totals,
+                    values='amt',
+                    names='cat',
+                    hole=0.5,
+                    color_discrete_sequence=['#667eea', '#764ba2', '#f093fb', '#f5576c', '#4facfe']
+                )
+                fig_pie.update_traces(
+                    textposition='outside',
+                    textinfo='label+percent',
+                    marker=dict(line=dict(color='#0e1117', width=2))
+                )
+                fig_pie.update_layout(
+                    paper_bgcolor='rgba(0,0,0,0)',
+                    plot_bgcolor='rgba(0,0,0,0)',
+                    font=dict(color='white', size=12),
+                    showlegend=True,
+                    legend=dict(orientation="h", yanchor="bottom", y=-0.2, xanchor="center", x=0.5),
+                    height=350
+                )
+                st.plotly_chart(fig_pie, use_container_width=True)
+
+                st.markdown("**Category Breakdown:**")
+                category_table = category_totals.sort_values('amt', ascending=False)
+                category_table['Percentage'] = (category_table['amt'] / category_table['amt'].sum() * 100).round(1)
+                category_table['amt'] = category_table['amt'].apply(lambda x: format_currency(x))
+                category_table.columns = ['Category', 'Amount', 'Share (%)']
+                st.dataframe(category_table, hide_index=True, use_container_width=True)
             
             st.markdown("</div>", unsafe_allow_html=True)
 
@@ -1251,51 +1265,54 @@ def dashboard_screen():
             st.markdown("<div class='stat-card'>", unsafe_allow_html=True)
             st.subheader("📈 Balance Trend")
             
-            dates = pd.date_range(end=datetime.now(), periods=len(user['history'])).strftime("%b %d")
+            dates, history_values = history_trend_xy(history)
             
-            fig_area = go.Figure()
-            
-            fig_area.add_trace(go.Scatter(
-                x=dates,
-                y=user['history'],
-                fill='tozeroy',
-                name='Balance',
-                line=dict(color='#00ff88', width=3),
-                fillcolor='rgba(0, 255, 136, 0.3)',
-                mode='lines+markers',
-                marker=dict(size=8, color='#00ff88', line=dict(width=2, color='white'))
-            ))
-            
-            fig_area.update_layout(
-                paper_bgcolor='rgba(0,0,0,0)',
-                plot_bgcolor='rgba(0,0,0,0)',
-                font=dict(color='white'),
-                xaxis=dict(
-                    showgrid=True,
-                    gridcolor='rgba(255,255,255,0.1)',
-                    title="Date"
-                ),
-                yaxis=dict(
-                    showgrid=True,
-                    gridcolor='rgba(255,255,255,0.1)',
-                    title="Balance (Rs.)"
-                ),
-                hovermode='x unified',
-                height=350
-            )
-            st.plotly_chart(fig_area, use_container_width=True)
-            
-            st.markdown("**Balance Statistics:**")
-            balance_stats = pd.DataFrame({
-                'Metric': ['Current', 'Highest', 'Lowest', 'Average'],
-                'Value': [
-                    format_currency(user['history'][-1]),
-                    format_currency(max(user['history'])),
-                    format_currency(min(user['history'])),
-                    format_currency(sum(user['history'])/len(user['history']))
-                ]
-            })
-            st.dataframe(balance_stats, hide_index=True, use_container_width=True)
+            if not history_values:
+                st.info("No balance history to display.")
+            else:
+                fig_area = go.Figure()
+
+                fig_area.add_trace(go.Scatter(
+                    x=dates,
+                    y=history_values,
+                    fill='tozeroy',
+                    name='Balance',
+                    line=dict(color='#00ff88', width=3),
+                    fillcolor='rgba(0, 255, 136, 0.3)',
+                    mode='lines+markers',
+                    marker=dict(size=8, color='#00ff88', line=dict(width=2, color='white'))
+                ))
+
+                fig_area.update_layout(
+                    paper_bgcolor='rgba(0,0,0,0)',
+                    plot_bgcolor='rgba(0,0,0,0)',
+                    font=dict(color='white'),
+                    xaxis=dict(
+                        showgrid=True,
+                        gridcolor='rgba(255,255,255,0.1)',
+                        title="Date"
+                    ),
+                    yaxis=dict(
+                        showgrid=True,
+                        gridcolor='rgba(255,255,255,0.1)',
+                        title="Balance (Rs.)"
+                    ),
+                    hovermode='x unified',
+                    height=350
+                )
+                st.plotly_chart(fig_area, use_container_width=True)
+
+                st.markdown("**Balance Statistics:**")
+                balance_stats = pd.DataFrame({
+                    'Metric': ['Current', 'Highest', 'Lowest', 'Average'],
+                    'Value': [
+                        format_currency(history_values[-1]),
+                        format_currency(max(history_values)),
+                        format_currency(min(history_values)),
+                        format_currency(sum(history_values)/len(history_values))
+                    ]
+                })
+                st.dataframe(balance_stats, hide_index=True, use_container_width=True)
             
             st.markdown("</div>", unsafe_allow_html=True)
         
@@ -1307,30 +1324,33 @@ def dashboard_screen():
             st.markdown("<div class='stat-card'>", unsafe_allow_html=True)
             st.subheader("💵 Income vs Expenses Comparison")
             
-            type_summary = df.groupby('type')['amt'].apply(lambda x: abs(x).sum()).reset_index()
-            
-            fig_bar = px.bar(
-                type_summary,
-                x='type',
-                y='amt',
-                color='type',
-                color_discrete_map={'Credit': '#00ff88', 'Debit': '#ff6b6b'},
-                text='amt'
-            )
-            fig_bar.update_traces(
-                texttemplate='Rs. %{text:,.0f}',
-                textposition='outside'
-            )
-            fig_bar.update_layout(
-                paper_bgcolor='rgba(0,0,0,0)',
-                plot_bgcolor='rgba(0,0,0,0)',
-                font=dict(color='white'),
-                xaxis_title="Transaction Type",
-                yaxis_title="Amount (Rs.)",
-                showlegend=False,
-                height=300
-            )
-            st.plotly_chart(fig_bar, use_container_width=True)
+            if df.empty:
+                st.info("No transaction data to display.")
+            else:
+                type_summary = df.groupby('type')['amt'].apply(lambda x: abs(x).sum()).reset_index()
+
+                fig_bar = px.bar(
+                    type_summary,
+                    x='type',
+                    y='amt',
+                    color='type',
+                    color_discrete_map={'Credit': '#00ff88', 'Debit': '#ff6b6b'},
+                    text='amt'
+                )
+                fig_bar.update_traces(
+                    texttemplate='Rs. %{text:,.0f}',
+                    textposition='outside'
+                )
+                fig_bar.update_layout(
+                    paper_bgcolor='rgba(0,0,0,0)',
+                    plot_bgcolor='rgba(0,0,0,0)',
+                    font=dict(color='white'),
+                    xaxis_title="Transaction Type",
+                    yaxis_title="Amount (Rs.)",
+                    showlegend=False,
+                    height=300
+                )
+                st.plotly_chart(fig_bar, use_container_width=True)
             st.markdown("</div>", unsafe_allow_html=True)
         
         with col_bar2:
@@ -1374,22 +1394,25 @@ def dashboard_screen():
         
         st.subheader("📋 Transaction Timeline")
         
-        df_display = df.copy()
-        df_display['amt'] = df_display['amt'].apply(lambda x: format_currency(x))
-        df_display = df_display[['date', 'desc', 'cat', 'amt', 'type']]
-        df_display.columns = ['Date', 'Description', 'Category', 'Amount', 'Type']
-        
-        st.dataframe(
-            df_display,
-            use_container_width=True,
-            hide_index=True,
-            column_config={
-                "Type": st.column_config.TextColumn(
-                    "Type",
-                    help="Credit or Debit"
-                )
-            }
-        )
+        if df.empty:
+            st.info("No transactions to display.")
+        else:
+            df_display = df.copy()
+            df_display['amt'] = df_display['amt'].apply(lambda x: format_currency(x))
+            df_display = df_display[['date', 'desc', 'cat', 'amt', 'type']]
+            df_display.columns = ['Date', 'Description', 'Category', 'Amount', 'Type']
+
+            st.dataframe(
+                df_display,
+                use_container_width=True,
+                hide_index=True,
+                column_config={
+                    "Type": st.column_config.TextColumn(
+                        "Type",
+                        help="Credit or Debit"
+                    )
+                }
+            )
     
     # TAB 3: Transfer
     with tab4:
@@ -1435,35 +1458,42 @@ def dashboard_screen():
         
         with col_stats:
             m1, m2, m3 = st.columns(3)
-            df = pd.DataFrame(user['transactions'])
-            income = df[df['type'] == 'Credit']['amt'].sum()
-            expense = abs(df[df['type'] == 'Debit']['amt'].sum())
+            df = safe_transactions_frame(user.get('transactions', []))
+            history = user.get('history', []) if isinstance(user.get('history', []), list) else []
+            income = df[df['type'] == 'Credit']['amt'].sum() if not df.empty else 0
+            expense = abs(df[df['type'] == 'Debit']['amt'].sum()) if not df.empty else 0
             
             m1.metric("Monthly Income", format_currency(income), "+12%")
             m2.metric("Monthly Spend", format_currency(expense), "-5%")
-            m3.metric("Credit Score", user['credit_score'], "+15 pts")
+            m3.metric("Credit Score", user.get('credit_score', 'N/A'), "+15 pts")
             
-            dates = pd.date_range(end=datetime.now(), periods=6).strftime("%b %d")
-            fig_trend = go.Figure(go.Scatter(x=dates, y=user['history'], fill='tozeroy', 
-                                           line=dict(color='#667eea', width=2)))
-            fig_trend.update_layout(margin=dict(l=0, r=0, t=0, b=0), height=80, 
-                                  paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)',
-                                  xaxis=dict(showgrid=False, visible=False), yaxis=dict(showgrid=False, visible=False))
-            st.plotly_chart(fig_trend, use_container_width=True, config={'displayModeBar': False})
+            dates, history_values = history_trend_xy(history)
+            if history_values:
+                fig_trend = go.Figure(go.Scatter(x=dates, y=history_values, fill='tozeroy',
+                                               line=dict(color='#667eea', width=2)))
+                fig_trend.update_layout(margin=dict(l=0, r=0, t=0, b=0), height=80,
+                                      paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)',
+                                      xaxis=dict(showgrid=False, visible=False), yaxis=dict(showgrid=False, visible=False))
+                st.plotly_chart(fig_trend, use_container_width=True, config={'displayModeBar': False})
+            else:
+                st.caption("No balance history yet.")
 
         st.subheader("Recent Activity")
-        st.dataframe(
-            df[['date', 'desc', 'cat', 'amt', 'type']],
-            use_container_width=True,
-            column_config={
-                "amt": st.column_config.NumberColumn("Amount", format="Rs. %.2f"),
-                "date": "Date",
-                "desc": "Description",
-                "cat": "Category",
-                "type": "Type"
-            },
-            hide_index=True
-        )
+        if df.empty:
+            st.info("No recent transactions to display.")
+        else:
+            st.dataframe(
+                df[['date', 'desc', 'cat', 'amt', 'type']],
+                use_container_width=True,
+                column_config={
+                    "amt": st.column_config.NumberColumn("Amount", format="Rs. %.2f"),
+                    "date": "Date",
+                    "desc": "Description",
+                    "cat": "Category",
+                    "type": "Type"
+                },
+                hide_index=True
+            )
 # ----------------------------------------------------------------------------- 
 # 6. MAIN EXECUTION
 # ----------------------------------------------------------------------------- 
