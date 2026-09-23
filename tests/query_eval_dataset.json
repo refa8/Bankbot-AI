@@ -1,0 +1,842 @@
+[
+  {
+    "id": 1,
+    "category": "A_deterministic_banking",
+    "subcategory": "balance",
+    "query": "What is my balance?",
+    "expected_domain_validity": true,
+    "expected_rule_intent": "balance"
+  },
+  {
+    "id": 2,
+    "category": "A_deterministic_banking",
+    "subcategory": "balance",
+    "query": "How much money do I have?",
+    "expected_domain_validity": true,
+    "expected_rule_intent": "balance"
+  },
+  {
+    "id": 3,
+    "category": "A_deterministic_banking",
+    "subcategory": "balance",
+    "query": "Check my account balance",
+    "expected_domain_validity": true,
+    "expected_rule_intent": "balance"
+  },
+  {
+    "id": 4,
+    "category": "A_deterministic_banking",
+    "subcategory": "balance",
+    "query": "What are my available funds?",
+    "expected_domain_validity": true,
+    "expected_rule_intent": "balance"
+  },
+  {
+    "id": 5,
+    "category": "A_deterministic_banking",
+    "subcategory": "balance",
+    "query": "Can you tell me how much money is in my account?",
+    "expected_domain_validity": true,
+    "expected_rule_intent": "balance"
+  },
+  {
+    "id": 6,
+    "category": "A_deterministic_banking",
+    "subcategory": "transactions",
+    "query": "Show my recent transactions",
+    "expected_domain_validity": true,
+    "expected_rule_intent": "transactions"
+  },
+  {
+    "id": 7,
+    "category": "A_deterministic_banking",
+    "subcategory": "transactions",
+    "query": "Show my transaction history",
+    "expected_domain_validity": true,
+    "expected_rule_intent": "transactions"
+  },
+  {
+    "id": 8,
+    "category": "A_deterministic_banking",
+    "subcategory": "transactions",
+    "query": "What was my last transaction?",
+    "expected_domain_validity": true,
+    "expected_rule_intent": "transactions"
+  },
+  {
+    "id": 9,
+    "category": "A_deterministic_banking",
+    "subcategory": "transactions",
+    "query": "Can I see my recent activity?",
+    "expected_domain_validity": true,
+    "expected_rule_intent": "transactions"
+  },
+  {
+    "id": 10,
+    "category": "A_deterministic_banking",
+    "subcategory": "transactions",
+    "query": "List my latest transactions",
+    "expected_domain_validity": true,
+    "expected_rule_intent": "transactions"
+  },
+  {
+    "id": 11,
+    "category": "A_deterministic_banking",
+    "subcategory": "spend",
+    "query": "How much did I spend?",
+    "expected_domain_validity": true,
+    "expected_rule_intent": "spend"
+  },
+  {
+    "id": 12,
+    "category": "A_deterministic_banking",
+    "subcategory": "spend",
+    "query": "Show my spending analysis",
+    "expected_domain_validity": true,
+    "expected_rule_intent": "spend"
+  },
+  {
+    "id": 13,
+    "category": "A_deterministic_banking",
+    "subcategory": "spend",
+    "query": "What are my total expenses this month?",
+    "expected_domain_validity": true,
+    "expected_rule_intent": "spend"
+  },
+  {
+    "id": 14,
+    "category": "A_deterministic_banking",
+    "subcategory": "spend",
+    "query": "Show my spending breakdown",
+    "expected_domain_validity": true,
+    "expected_rule_intent": "spend"
+  },
+  {
+    "id": 15,
+    "category": "A_deterministic_banking",
+    "subcategory": "spend",
+    "query": "Give me my expense analytics",
+    "expected_domain_validity": true,
+    "expected_rule_intent": "spend"
+  },
+  {
+    "id": 16,
+    "category": "A_deterministic_banking",
+    "subcategory": "profile",
+    "query": "Show profile",
+    "expected_domain_validity": true,
+    "expected_rule_intent": "profile"
+  },
+  {
+    "id": 17,
+    "category": "A_deterministic_banking",
+    "subcategory": "profile",
+    "query": "What is my credit score?",
+    "expected_domain_validity": true,
+    "expected_rule_intent": "profile"
+  },
+  {
+    "id": 18,
+    "category": "A_deterministic_banking",
+    "subcategory": "profile",
+    "query": "Show my account details",
+    "expected_domain_validity": true,
+    "expected_rule_intent": "profile"
+  },
+  {
+    "id": 19,
+    "category": "A_deterministic_banking",
+    "subcategory": "profile",
+    "query": "View my account information",
+    "expected_domain_validity": true,
+    "expected_rule_intent": "profile"
+  },
+  {
+    "id": 20,
+    "category": "A_deterministic_banking",
+    "subcategory": "profile",
+    "query": "Show my details",
+    "expected_domain_validity": true,
+    "expected_rule_intent": "profile"
+  },
+  {
+    "id": 21,
+    "category": "A_deterministic_banking",
+    "subcategory": "transfer",
+    "query": "Transfer money",
+    "expected_domain_validity": true,
+    "expected_rule_intent": "transfer"
+  },
+  {
+    "id": 22,
+    "category": "A_deterministic_banking",
+    "subcategory": "transfer",
+    "query": "How do I send money?",
+    "expected_domain_validity": true,
+    "expected_rule_intent": "transfer"
+  },
+  {
+    "id": 23,
+    "category": "A_deterministic_banking",
+    "subcategory": "transfer",
+    "query": "I want to transfer funds",
+    "expected_domain_validity": true,
+    "expected_rule_intent": "transfer"
+  },
+  {
+    "id": 24,
+    "category": "A_deterministic_banking",
+    "subcategory": "transfer",
+    "query": "How to send money to another account?",
+    "expected_domain_validity": true,
+    "expected_rule_intent": "transfer"
+  },
+  {
+    "id": 25,
+    "category": "A_deterministic_banking",
+    "subcategory": "transfer",
+    "query": "How do I pay someone?",
+    "expected_domain_validity": true,
+    "expected_rule_intent": "transfer"
+  },
+  {
+    "id": 26,
+    "category": "B_conversation",
+    "subcategory": "greeting",
+    "query": "hi",
+    "expected_domain_validity": true,
+    "expected_rule_intent": "greeting"
+  },
+  {
+    "id": 27,
+    "category": "B_conversation",
+    "subcategory": "greeting",
+    "query": "hello",
+    "expected_domain_validity": true,
+    "expected_rule_intent": "greeting"
+  },
+  {
+    "id": 28,
+    "category": "B_conversation",
+    "subcategory": "greeting",
+    "query": "hey",
+    "expected_domain_validity": true,
+    "expected_rule_intent": "greeting"
+  },
+  {
+    "id": 29,
+    "category": "B_conversation",
+    "subcategory": "greeting",
+    "query": "good morning",
+    "expected_domain_validity": true,
+    "expected_rule_intent": "greeting"
+  },
+  {
+    "id": 30,
+    "category": "B_conversation",
+    "subcategory": "greeting",
+    "query": "good afternoon",
+    "expected_domain_validity": true,
+    "expected_rule_intent": "greeting"
+  },
+  {
+    "id": 31,
+    "category": "B_conversation",
+    "subcategory": "greeting",
+    "query": "good evening",
+    "expected_domain_validity": true,
+    "expected_rule_intent": "greeting"
+  },
+  {
+    "id": 32,
+    "category": "B_conversation",
+    "subcategory": "greeting",
+    "query": "how are you",
+    "expected_domain_validity": true,
+    "expected_rule_intent": "greeting"
+  },
+  {
+    "id": 33,
+    "category": "B_conversation",
+    "subcategory": "greeting",
+    "query": "how do you do",
+    "expected_domain_validity": true,
+    "expected_rule_intent": "greeting"
+  },
+  {
+    "id": 34,
+    "category": "B_conversation",
+    "subcategory": "goodbye",
+    "query": "bye",
+    "expected_domain_validity": true,
+    "expected_rule_intent": "goodbye"
+  },
+  {
+    "id": 35,
+    "category": "B_conversation",
+    "subcategory": "goodbye",
+    "query": "goodbye",
+    "expected_domain_validity": true,
+    "expected_rule_intent": "goodbye"
+  },
+  {
+    "id": 36,
+    "category": "B_conversation",
+    "subcategory": "goodbye",
+    "query": "bye bankbot",
+    "expected_domain_validity": true,
+    "expected_rule_intent": "goodbye"
+  },
+  {
+    "id": 37,
+    "category": "B_conversation",
+    "subcategory": "goodbye",
+    "query": "goodbye see you later",
+    "expected_domain_validity": true,
+    "expected_rule_intent": "goodbye"
+  },
+  {
+    "id": 38,
+    "category": "B_conversation",
+    "subcategory": "help",
+    "query": "help",
+    "expected_domain_validity": true,
+    "expected_rule_intent": "help"
+  },
+  {
+    "id": 39,
+    "category": "B_conversation",
+    "subcategory": "help",
+    "query": "what can you do",
+    "expected_domain_validity": true,
+    "expected_rule_intent": "help"
+  },
+  {
+    "id": 40,
+    "category": "B_conversation",
+    "subcategory": "help",
+    "query": "who are you",
+    "expected_domain_validity": true,
+    "expected_rule_intent": "help"
+  },
+  {
+    "id": 41,
+    "category": "C_valid_banking_llm",
+    "subcategory": "policy",
+    "query": "What are the branch operating hours?",
+    "expected_domain_validity": true,
+    "expected_rule_intent": null
+  },
+  {
+    "id": 42,
+    "category": "C_valid_banking_llm",
+    "subcategory": "policy",
+    "query": "Is the branch open on second Saturdays?",
+    "expected_domain_validity": true,
+    "expected_rule_intent": null
+  },
+  {
+    "id": 43,
+    "category": "C_valid_banking_llm",
+    "subcategory": "policy",
+    "query": "What is the customer support phone number?",
+    "expected_domain_validity": true,
+    "expected_rule_intent": null
+  },
+  {
+    "id": 44,
+    "category": "C_valid_banking_llm",
+    "subcategory": "policy",
+    "query": "What is the official email for SecureBank support?",
+    "expected_domain_validity": true,
+    "expected_rule_intent": null
+  },
+  {
+    "id": 45,
+    "category": "C_valid_banking_llm",
+    "subcategory": "fees_limits",
+    "query": "What is the daily UPI transfer limit?",
+    "expected_domain_validity": true,
+    "expected_rule_intent": null
+  },
+  {
+    "id": 46,
+    "category": "C_valid_banking_llm",
+    "subcategory": "fees_limits",
+    "query": "What is the annual maintenance fee for savings accounts?",
+    "expected_domain_validity": true,
+    "expected_rule_intent": null
+  },
+  {
+    "id": 47,
+    "category": "C_valid_banking_llm",
+    "subcategory": "fees_limits",
+    "query": "Are there any charges for ATM withdrawals after 5 free transactions?",
+    "expected_domain_validity": true,
+    "expected_rule_intent": null
+  },
+  {
+    "id": 48,
+    "category": "C_valid_banking_llm",
+    "subcategory": "fees_limits",
+    "query": "What is the RTGS transfer fee?",
+    "expected_domain_validity": true,
+    "expected_rule_intent": null
+  },
+  {
+    "id": 49,
+    "category": "C_valid_banking_llm",
+    "subcategory": "fees_limits",
+    "query": "Is there a penalty fee for minimum balance violation?",
+    "expected_domain_validity": true,
+    "expected_rule_intent": null
+  },
+  {
+    "id": 50,
+    "category": "C_valid_banking_llm",
+    "subcategory": "loans",
+    "query": "What is the interest rate for home loans over 50 Lakhs?",
+    "expected_domain_validity": true,
+    "expected_rule_intent": null
+  },
+  {
+    "id": 51,
+    "category": "C_valid_banking_llm",
+    "subcategory": "loans",
+    "query": "What are the eligibility criteria for a personal loan?",
+    "expected_domain_validity": true,
+    "expected_rule_intent": null
+  },
+  {
+    "id": 52,
+    "category": "C_valid_banking_llm",
+    "subcategory": "loans",
+    "query": "Can I apply for a car loan online?",
+    "expected_domain_validity": true,
+    "expected_rule_intent": null
+  },
+  {
+    "id": 53,
+    "category": "C_valid_banking_llm",
+    "subcategory": "loans",
+    "query": "How is the loan EMI computed?",
+    "expected_domain_validity": true,
+    "expected_rule_intent": null
+  },
+  {
+    "id": 54,
+    "category": "C_valid_banking_llm",
+    "subcategory": "loans",
+    "query": "What documents do I need for a home loan application?",
+    "expected_domain_validity": true,
+    "expected_rule_intent": null
+  },
+  {
+    "id": 55,
+    "category": "C_valid_banking_llm",
+    "subcategory": "cards",
+    "query": "What is the annual fee for the Platinum credit card?",
+    "expected_domain_validity": true,
+    "expected_rule_intent": null
+  },
+  {
+    "id": 56,
+    "category": "C_valid_banking_llm",
+    "subcategory": "cards",
+    "query": "Is the Gold credit card really free for life?",
+    "expected_domain_validity": true,
+    "expected_rule_intent": null
+  },
+  {
+    "id": 57,
+    "category": "C_valid_banking_llm",
+    "subcategory": "cards",
+    "query": "How do I block a lost debit card?",
+    "expected_domain_validity": true,
+    "expected_rule_intent": null
+  },
+  {
+    "id": 58,
+    "category": "C_valid_banking_llm",
+    "subcategory": "cards",
+    "query": "How can I enable international transactions on my card?",
+    "expected_domain_validity": true,
+    "expected_rule_intent": null
+  },
+  {
+    "id": 59,
+    "category": "C_valid_banking_llm",
+    "subcategory": "cards",
+    "query": "What reward points do I earn on credit card purchases?",
+    "expected_domain_validity": true,
+    "expected_rule_intent": null
+  },
+  {
+    "id": 60,
+    "category": "C_valid_banking_llm",
+    "subcategory": "deposits",
+    "query": "What is the fixed deposit interest rate for 1 year?",
+    "expected_domain_validity": true,
+    "expected_rule_intent": null
+  },
+  {
+    "id": 61,
+    "category": "C_valid_banking_llm",
+    "subcategory": "deposits",
+    "query": "What FD rate do senior citizens receive for 3 years?",
+    "expected_domain_validity": true,
+    "expected_rule_intent": null
+  },
+  {
+    "id": 62,
+    "category": "C_valid_banking_llm",
+    "subcategory": "deposits",
+    "query": "What is the interest rate on savings account deposits?",
+    "expected_domain_validity": true,
+    "expected_rule_intent": null
+  },
+  {
+    "id": 63,
+    "category": "C_valid_banking_llm",
+    "subcategory": "account_services",
+    "query": "How can I update my KYC information?",
+    "expected_domain_validity": true,
+    "expected_rule_intent": null
+  },
+  {
+    "id": 64,
+    "category": "C_valid_banking_llm",
+    "subcategory": "account_services",
+    "query": "What is the bank branch IFSC code?",
+    "expected_domain_validity": true,
+    "expected_rule_intent": null
+  },
+  {
+    "id": 65,
+    "category": "C_valid_banking_llm",
+    "subcategory": "account_services",
+    "query": "How do I request a new cheque book?",
+    "expected_domain_validity": true,
+    "expected_rule_intent": null
+  },
+  {
+    "id": 66,
+    "category": "D_clearly_off_topic",
+    "subcategory": "programming",
+    "query": "write a python function to sort a list",
+    "expected_domain_validity": false,
+    "expected_rule_intent": null
+  },
+  {
+    "id": 67,
+    "category": "D_clearly_off_topic",
+    "subcategory": "programming",
+    "query": "how to fix an undefined variable in javascript",
+    "expected_domain_validity": false,
+    "expected_rule_intent": null
+  },
+  {
+    "id": 68,
+    "category": "D_clearly_off_topic",
+    "subcategory": "programming",
+    "query": "create an html and css button component",
+    "expected_domain_validity": false,
+    "expected_rule_intent": null
+  },
+  {
+    "id": 69,
+    "category": "D_clearly_off_topic",
+    "subcategory": "programming",
+    "query": "explain the difference between tcp and udp software",
+    "expected_domain_validity": false,
+    "expected_rule_intent": null
+  },
+  {
+    "id": 70,
+    "category": "D_clearly_off_topic",
+    "subcategory": "mathematics",
+    "query": "solve for x in 3x + 15 = 45",
+    "expected_domain_validity": false,
+    "expected_rule_intent": null
+  },
+  {
+    "id": 71,
+    "category": "D_clearly_off_topic",
+    "subcategory": "science",
+    "query": "explain Newton's laws of motion in physics",
+    "expected_domain_validity": false,
+    "expected_rule_intent": null
+  },
+  {
+    "id": 72,
+    "category": "D_clearly_off_topic",
+    "subcategory": "science",
+    "query": "what happens in cellular respiration in biology",
+    "expected_domain_validity": false,
+    "expected_rule_intent": null
+  },
+  {
+    "id": 73,
+    "category": "D_clearly_off_topic",
+    "subcategory": "science",
+    "query": "what is the chemical structure of water",
+    "expected_domain_validity": false,
+    "expected_rule_intent": null
+  },
+  {
+    "id": 74,
+    "category": "D_clearly_off_topic",
+    "subcategory": "entertainment",
+    "query": "tell me a funny joke",
+    "expected_domain_validity": false,
+    "expected_rule_intent": null
+  },
+  {
+    "id": 75,
+    "category": "D_clearly_off_topic",
+    "subcategory": "cooking",
+    "query": "give me an authentic Italian pasta recipe",
+    "expected_domain_validity": false,
+    "expected_rule_intent": null
+  },
+  {
+    "id": 76,
+    "category": "D_clearly_off_topic",
+    "subcategory": "entertainment",
+    "query": "recommend top 5 movies of 2024",
+    "expected_domain_validity": false,
+    "expected_rule_intent": null
+  },
+  {
+    "id": 77,
+    "category": "D_clearly_off_topic",
+    "subcategory": "lifestyle",
+    "query": "what is the best workout routine for building muscle",
+    "expected_domain_validity": false,
+    "expected_rule_intent": null
+  },
+  {
+    "id": 78,
+    "category": "D_clearly_off_topic",
+    "subcategory": "entertainment",
+    "query": "who won best actor at the Oscars",
+    "expected_domain_validity": false,
+    "expected_rule_intent": null
+  },
+  {
+    "id": 79,
+    "category": "D_clearly_off_topic",
+    "subcategory": "weather",
+    "query": "what is the weather forecast today",
+    "expected_domain_validity": false,
+    "expected_rule_intent": null
+  },
+  {
+    "id": 80,
+    "category": "D_clearly_off_topic",
+    "subcategory": "general_knowledge",
+    "query": "what is the capital city of France",
+    "expected_domain_validity": false,
+    "expected_rule_intent": null
+  },
+  {
+    "id": 81,
+    "category": "D_clearly_off_topic",
+    "subcategory": "general_knowledge",
+    "query": "who was the first president of the United States",
+    "expected_domain_validity": false,
+    "expected_rule_intent": null
+  },
+  {
+    "id": 82,
+    "category": "D_clearly_off_topic",
+    "subcategory": "general_knowledge",
+    "query": "tell me my astrology prediction for today",
+    "expected_domain_validity": false,
+    "expected_rule_intent": null
+  },
+  {
+    "id": 83,
+    "category": "D_clearly_off_topic",
+    "subcategory": "entertainment",
+    "query": "write a poem about the ocean",
+    "expected_domain_validity": false,
+    "expected_rule_intent": null
+  },
+  {
+    "id": 84,
+    "category": "D_clearly_off_topic",
+    "subcategory": "general_knowledge",
+    "query": "explain the history of ancient Rome",
+    "expected_domain_validity": false,
+    "expected_rule_intent": null
+  },
+  {
+    "id": 85,
+    "category": "D_clearly_off_topic",
+    "subcategory": "general_knowledge",
+    "query": "what caused the French Revolution",
+    "expected_domain_validity": false,
+    "expected_rule_intent": null
+  },
+  {
+    "id": 86,
+    "category": "E_boundary_ambiguous",
+    "subcategory": "boundary_transactions",
+    "query": "show my history",
+    "expected_domain_validity": true,
+    "expected_rule_intent": "transactions"
+  },
+  {
+    "id": 87,
+    "category": "E_boundary_ambiguous",
+    "subcategory": "boundary_transactions",
+    "query": "what happened recently",
+    "expected_domain_validity": true,
+    "expected_rule_intent": "transactions"
+  },
+  {
+    "id": 88,
+    "category": "E_boundary_ambiguous",
+    "subcategory": "boundary_profile",
+    "query": "tell me about my account",
+    "expected_domain_validity": true,
+    "expected_rule_intent": "profile"
+  },
+  {
+    "id": 89,
+    "category": "E_boundary_ambiguous",
+    "subcategory": "boundary_spend",
+    "query": "how much did I pay",
+    "expected_domain_validity": true,
+    "expected_rule_intent": "spend"
+  },
+  {
+    "id": 90,
+    "category": "E_boundary_ambiguous",
+    "subcategory": "boundary_transfer",
+    "query": "can I send money",
+    "expected_domain_validity": true,
+    "expected_rule_intent": "transfer"
+  },
+  {
+    "id": 91,
+    "category": "E_boundary_ambiguous",
+    "subcategory": "boundary_policy_llm",
+    "query": "what is my rate",
+    "expected_domain_validity": true,
+    "expected_rule_intent": null
+  },
+  {
+    "id": 92,
+    "category": "E_boundary_ambiguous",
+    "subcategory": "boundary_history_offtopic",
+    "query": "history of banking",
+    "expected_domain_validity": false,
+    "expected_rule_intent": null
+  },
+  {
+    "id": 93,
+    "category": "E_boundary_ambiguous",
+    "subcategory": "adversarial_offtopic",
+    "query": "tell me a joke about money",
+    "expected_domain_validity": false,
+    "expected_rule_intent": null
+  },
+  {
+    "id": 94,
+    "category": "E_boundary_ambiguous",
+    "subcategory": "adversarial_offtopic",
+    "query": "write python code to calculate bank interest",
+    "expected_domain_validity": false,
+    "expected_rule_intent": null
+  },
+  {
+    "id": 95,
+    "category": "E_boundary_ambiguous",
+    "subcategory": "adversarial_offtopic",
+    "query": "what is the weather near the bank branch",
+    "expected_domain_validity": false,
+    "expected_rule_intent": null
+  },
+  {
+    "id": 96,
+    "category": "E_boundary_ambiguous",
+    "subcategory": "adversarial_offtopic",
+    "query": "how much money does Bill Gates make",
+    "expected_domain_validity": false,
+    "expected_rule_intent": null
+  },
+  {
+    "id": 97,
+    "category": "E_boundary_ambiguous",
+    "subcategory": "adversarial_offtopic",
+    "query": "recipe for bank holiday chocolate cake",
+    "expected_domain_validity": false,
+    "expected_rule_intent": null
+  },
+  {
+    "id": 98,
+    "category": "E_boundary_ambiguous",
+    "subcategory": "boundary_spend",
+    "query": "where did all my money go",
+    "expected_domain_validity": true,
+    "expected_rule_intent": "spend"
+  },
+  {
+    "id": 99,
+    "category": "E_boundary_ambiguous",
+    "subcategory": "boundary_guidance_llm",
+    "query": "can you explain what a mutual fund is",
+    "expected_domain_validity": true,
+    "expected_rule_intent": null
+  },
+  {
+    "id": 100,
+    "category": "E_boundary_ambiguous",
+    "subcategory": "boundary_transfer",
+    "query": "how to send funds to John",
+    "expected_domain_validity": true,
+    "expected_rule_intent": "transfer"
+  },
+  {
+    "id": 101,
+    "category": "E_boundary_ambiguous",
+    "subcategory": "boundary_statement",
+    "query": "can I get a bank statement for last month",
+    "expected_domain_validity": true,
+    "expected_rule_intent": "transactions"
+  },
+  {
+    "id": 102,
+    "category": "E_boundary_ambiguous",
+    "subcategory": "boundary_atm_llm",
+    "query": "how much cash can I withdraw at the ATM",
+    "expected_domain_validity": true,
+    "expected_rule_intent": null
+  },
+  {
+    "id": 103,
+    "category": "E_boundary_ambiguous",
+    "subcategory": "boundary_profile",
+    "query": "what is my account number",
+    "expected_domain_validity": true,
+    "expected_rule_intent": "profile"
+  },
+  {
+    "id": 104,
+    "category": "E_boundary_ambiguous",
+    "subcategory": "boundary_guidance_llm",
+    "query": "give me financial advice on saving money",
+    "expected_domain_validity": true,
+    "expected_rule_intent": null
+  },
+  {
+    "id": 105,
+    "category": "E_boundary_ambiguous",
+    "subcategory": "adversarial_offtopic",
+    "query": "science behind banking algorithms",
+    "expected_domain_validity": false,
+    "expected_rule_intent": null
+  }
+]

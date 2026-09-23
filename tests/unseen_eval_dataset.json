@@ -1,0 +1,902 @@
+[
+  {
+    "id": 1,
+    "category": "1_deterministic_banking",
+    "subcategory": "balance",
+    "query": "am i broke right now or what",
+    "expected_domain_validity": true,
+    "expected_intent": "balance",
+    "expected_rule_intent": "balance"
+  },
+  {
+    "id": 2,
+    "category": "1_deterministic_banking",
+    "subcategory": "balance",
+    "query": "how much cash is left in my savings",
+    "expected_domain_validity": true,
+    "expected_intent": "balance",
+    "expected_rule_intent": "balance"
+  },
+  {
+    "id": 3,
+    "category": "1_deterministic_banking",
+    "subcategory": "balance",
+    "query": "whats my currnt balence",
+    "expected_domain_validity": true,
+    "expected_intent": "balance",
+    "expected_rule_intent": "balance"
+  },
+  {
+    "id": 4,
+    "category": "1_deterministic_banking",
+    "subcategory": "balance",
+    "query": "wanna know my remaining balance",
+    "expected_domain_validity": true,
+    "expected_intent": "balance",
+    "expected_rule_intent": "balance"
+  },
+  {
+    "id": 5,
+    "category": "1_deterministic_banking",
+    "subcategory": "transactions",
+    "query": "what did i buy yesterday",
+    "expected_domain_validity": true,
+    "expected_intent": "transactions",
+    "expected_rule_intent": "transactions"
+  },
+  {
+    "id": 6,
+    "category": "1_deterministic_banking",
+    "subcategory": "transactions",
+    "query": "pull up my latest debits and credits",
+    "expected_domain_validity": true,
+    "expected_intent": "transactions",
+    "expected_rule_intent": "transactions"
+  },
+  {
+    "id": 7,
+    "category": "1_deterministic_banking",
+    "subcategory": "transactions",
+    "query": "show me where my card was swiped recently",
+    "expected_domain_validity": true,
+    "expected_intent": "transactions",
+    "expected_rule_intent": "transactions"
+  },
+  {
+    "id": 8,
+    "category": "1_deterministic_banking",
+    "subcategory": "transactions",
+    "query": "can u show my recent transaction history pls",
+    "expected_domain_validity": true,
+    "expected_intent": "transactions",
+    "expected_rule_intent": "transactions"
+  },
+  {
+    "id": 9,
+    "category": "1_deterministic_banking",
+    "subcategory": "spending",
+    "query": "how much did i blow on shopping this week",
+    "expected_domain_validity": true,
+    "expected_intent": "spend",
+    "expected_rule_intent": "spend"
+  },
+  {
+    "id": 10,
+    "category": "1_deterministic_banking",
+    "subcategory": "spending",
+    "query": "am i spending way too much lately",
+    "expected_domain_validity": true,
+    "expected_intent": "spend",
+    "expected_rule_intent": "spend"
+  },
+  {
+    "id": 11,
+    "category": "1_deterministic_banking",
+    "subcategory": "spending",
+    "query": "break down my expenditure for me",
+    "expected_domain_validity": true,
+    "expected_intent": "spend",
+    "expected_rule_intent": "spend"
+  },
+  {
+    "id": 12,
+    "category": "1_deterministic_banking",
+    "subcategory": "spending",
+    "query": "what's my biggest expense category so far",
+    "expected_domain_validity": true,
+    "expected_intent": "spend",
+    "expected_rule_intent": "spend"
+  },
+  {
+    "id": 13,
+    "category": "1_deterministic_banking",
+    "subcategory": "profile",
+    "query": "i need to see my account info and credit rating",
+    "expected_domain_validity": true,
+    "expected_intent": "profile",
+    "expected_rule_intent": "profile"
+  },
+  {
+    "id": 14,
+    "category": "1_deterministic_banking",
+    "subcategory": "profile",
+    "query": "who is this account registered to",
+    "expected_domain_validity": true,
+    "expected_intent": "profile",
+    "expected_rule_intent": "profile"
+  },
+  {
+    "id": 15,
+    "category": "1_deterministic_banking",
+    "subcategory": "profile",
+    "query": "display my user profile and registered phone number",
+    "expected_domain_validity": true,
+    "expected_intent": "profile",
+    "expected_rule_intent": "profile"
+  },
+  {
+    "id": 16,
+    "category": "1_deterministic_banking",
+    "subcategory": "transfer",
+    "query": "wire 500 bucks to my brother",
+    "expected_domain_validity": true,
+    "expected_intent": "transfer",
+    "expected_rule_intent": "transfer"
+  },
+  {
+    "id": 17,
+    "category": "1_deterministic_banking",
+    "subcategory": "transfer",
+    "query": "need to send cash to mom right away",
+    "expected_domain_validity": true,
+    "expected_intent": "transfer",
+    "expected_rule_intent": "transfer"
+  },
+  {
+    "id": 18,
+    "category": "1_deterministic_banking",
+    "subcategory": "transfer",
+    "query": "i gotta pay my landlord how do i do that",
+    "expected_domain_validity": true,
+    "expected_intent": "transfer",
+    "expected_rule_intent": "transfer"
+  },
+  {
+    "id": 19,
+    "category": "2_conversation",
+    "subcategory": "greetings",
+    "query": "yo bankbot",
+    "expected_domain_validity": true,
+    "expected_intent": "greeting",
+    "expected_rule_intent": "greeting"
+  },
+  {
+    "id": 20,
+    "category": "2_conversation",
+    "subcategory": "greetings",
+    "query": "whats up bot",
+    "expected_domain_validity": true,
+    "expected_intent": "greeting",
+    "expected_rule_intent": "greeting"
+  },
+  {
+    "id": 21,
+    "category": "2_conversation",
+    "subcategory": "greetings",
+    "query": "good day assistant",
+    "expected_domain_validity": true,
+    "expected_intent": "greeting",
+    "expected_rule_intent": "greeting"
+  },
+  {
+    "id": 22,
+    "category": "2_conversation",
+    "subcategory": "greetings",
+    "query": "heyyy",
+    "expected_domain_validity": true,
+    "expected_intent": "greeting",
+    "expected_rule_intent": "greeting"
+  },
+  {
+    "id": 23,
+    "category": "2_conversation",
+    "subcategory": "farewells",
+    "query": "cya later",
+    "expected_domain_validity": true,
+    "expected_intent": "goodbye",
+    "expected_rule_intent": "goodbye"
+  },
+  {
+    "id": 24,
+    "category": "2_conversation",
+    "subcategory": "farewells",
+    "query": "im heading out bye",
+    "expected_domain_validity": true,
+    "expected_intent": "goodbye",
+    "expected_rule_intent": "goodbye"
+  },
+  {
+    "id": 25,
+    "category": "2_conversation",
+    "subcategory": "farewells",
+    "query": "talk to you tomorrow goodbye",
+    "expected_domain_validity": true,
+    "expected_intent": "goodbye",
+    "expected_rule_intent": "goodbye"
+  },
+  {
+    "id": 26,
+    "category": "2_conversation",
+    "subcategory": "farewells",
+    "query": "peace out",
+    "expected_domain_validity": true,
+    "expected_intent": "goodbye",
+    "expected_rule_intent": "goodbye"
+  },
+  {
+    "id": 27,
+    "category": "2_conversation",
+    "subcategory": "help",
+    "query": "help me navigate this banking app",
+    "expected_domain_validity": true,
+    "expected_intent": "help",
+    "expected_rule_intent": "help"
+  },
+  {
+    "id": 28,
+    "category": "2_conversation",
+    "subcategory": "help",
+    "query": "what features do you offer here",
+    "expected_domain_validity": true,
+    "expected_intent": "help",
+    "expected_rule_intent": "help"
+  },
+  {
+    "id": 29,
+    "category": "3_valid_banking_llm",
+    "subcategory": "fees",
+    "query": "what happens if my cheque bounces is there a fine",
+    "expected_domain_validity": true,
+    "expected_intent": null,
+    "expected_rule_intent": null
+  },
+  {
+    "id": 30,
+    "category": "3_valid_banking_llm",
+    "subcategory": "fees",
+    "query": "do you guys charge for paper account statements mailed to home",
+    "expected_domain_validity": true,
+    "expected_intent": null,
+    "expected_rule_intent": null
+  },
+  {
+    "id": 31,
+    "category": "3_valid_banking_llm",
+    "subcategory": "fees",
+    "query": "how much is the penalty if i close my fixed deposit before maturity",
+    "expected_domain_validity": true,
+    "expected_intent": null,
+    "expected_rule_intent": null
+  },
+  {
+    "id": 32,
+    "category": "3_valid_banking_llm",
+    "subcategory": "limits",
+    "query": "is there a ceiling on how much i can send via NEFT in one go",
+    "expected_domain_validity": true,
+    "expected_intent": null,
+    "expected_rule_intent": null
+  },
+  {
+    "id": 33,
+    "category": "3_valid_banking_llm",
+    "subcategory": "limits",
+    "query": "what is the maximum cash deposit allowed at the counter without PAN card",
+    "expected_domain_validity": true,
+    "expected_intent": null,
+    "expected_rule_intent": null
+  },
+  {
+    "id": 34,
+    "category": "3_valid_banking_llm",
+    "subcategory": "limits",
+    "query": "how many free ATM withdrawals do i get each month",
+    "expected_domain_validity": true,
+    "expected_intent": null,
+    "expected_rule_intent": null
+  },
+  {
+    "id": 35,
+    "category": "3_valid_banking_llm",
+    "subcategory": "policies",
+    "query": "are your bank branches open on public holidays",
+    "expected_domain_validity": true,
+    "expected_intent": null,
+    "expected_rule_intent": null
+  },
+  {
+    "id": 36,
+    "category": "3_valid_banking_llm",
+    "subcategory": "policies",
+    "query": "what is the grievance redressal escalation matrix for unresolved complaints",
+    "expected_domain_validity": true,
+    "expected_intent": null,
+    "expected_rule_intent": null
+  },
+  {
+    "id": 37,
+    "category": "3_valid_banking_llm",
+    "subcategory": "policies",
+    "query": "how long does it take for an international wire transfer to clear",
+    "expected_domain_validity": true,
+    "expected_intent": null,
+    "expected_rule_intent": null
+  },
+  {
+    "id": 38,
+    "category": "3_valid_banking_llm",
+    "subcategory": "interest_rates",
+    "query": "what interest rate will i get if i lock my funds for 5 years",
+    "expected_domain_validity": true,
+    "expected_intent": null,
+    "expected_rule_intent": null
+  },
+  {
+    "id": 39,
+    "category": "3_valid_banking_llm",
+    "subcategory": "interest_rates",
+    "query": "does the savings account interest compound monthly or quarterly",
+    "expected_domain_validity": true,
+    "expected_intent": null,
+    "expected_rule_intent": null
+  },
+  {
+    "id": 40,
+    "category": "3_valid_banking_llm",
+    "subcategory": "deposits",
+    "query": "what is the difference between cumulative and non-cumulative fixed deposits",
+    "expected_domain_validity": true,
+    "expected_intent": null,
+    "expected_rule_intent": null
+  },
+  {
+    "id": 41,
+    "category": "3_valid_banking_llm",
+    "subcategory": "loans",
+    "query": "can a college student get an education loan without collateral",
+    "expected_domain_validity": true,
+    "expected_intent": null,
+    "expected_rule_intent": null
+  },
+  {
+    "id": 42,
+    "category": "3_valid_banking_llm",
+    "subcategory": "loans",
+    "query": "what is the maximum loan-to-value ratio for home mortgages",
+    "expected_domain_validity": true,
+    "expected_intent": null,
+    "expected_rule_intent": null
+  },
+  {
+    "id": 43,
+    "category": "3_valid_banking_llm",
+    "subcategory": "loans",
+    "query": "does taking a personal loan hurt my credit score",
+    "expected_domain_validity": true,
+    "expected_intent": null,
+    "expected_rule_intent": null
+  },
+  {
+    "id": 44,
+    "category": "3_valid_banking_llm",
+    "subcategory": "cards",
+    "query": "my credit card expires next month how do i get a replacement",
+    "expected_domain_validity": true,
+    "expected_intent": null,
+    "expected_rule_intent": null
+  },
+  {
+    "id": 45,
+    "category": "3_valid_banking_llm",
+    "subcategory": "cards",
+    "query": "what should i do if the ATM ate my card",
+    "expected_domain_validity": true,
+    "expected_intent": null,
+    "expected_rule_intent": null
+  },
+  {
+    "id": 46,
+    "category": "3_valid_banking_llm",
+    "subcategory": "cards",
+    "query": "can i set a contactless tap-to-pay limit on my debit card",
+    "expected_domain_validity": true,
+    "expected_intent": null,
+    "expected_rule_intent": null
+  },
+  {
+    "id": 47,
+    "category": "3_valid_banking_llm",
+    "subcategory": "financial_guidance",
+    "query": "how much of my income should go into emergency savings",
+    "expected_domain_validity": true,
+    "expected_intent": null,
+    "expected_rule_intent": null
+  },
+  {
+    "id": 48,
+    "category": "3_valid_banking_llm",
+    "subcategory": "financial_guidance",
+    "query": "is it better to pay off high interest debt or invest in fixed deposits",
+    "expected_domain_validity": true,
+    "expected_intent": null,
+    "expected_rule_intent": null
+  },
+  {
+    "id": 49,
+    "category": "4_off_topic_no_banking_words",
+    "subcategory": "cooking",
+    "query": "how do i bake sourdough bread with crispy crust",
+    "expected_domain_validity": false,
+    "expected_intent": null,
+    "expected_rule_intent": null
+  },
+  {
+    "id": 50,
+    "category": "4_off_topic_no_banking_words",
+    "subcategory": "entertainment",
+    "query": "who directed the movie Inception",
+    "expected_domain_validity": false,
+    "expected_intent": null,
+    "expected_rule_intent": null
+  },
+  {
+    "id": 51,
+    "category": "4_off_topic_no_banking_words",
+    "subcategory": "essay",
+    "query": "can you write an essay about climate change in Antarctica",
+    "expected_domain_validity": false,
+    "expected_intent": null,
+    "expected_rule_intent": null
+  },
+  {
+    "id": 52,
+    "category": "4_off_topic_no_banking_words",
+    "subcategory": "technology",
+    "query": "how to build a gaming PC step by step",
+    "expected_domain_validity": false,
+    "expected_intent": null,
+    "expected_rule_intent": null
+  },
+  {
+    "id": 53,
+    "category": "4_off_topic_no_banking_words",
+    "subcategory": "physics",
+    "query": "what is the speed of light in a vacuum",
+    "expected_domain_validity": false,
+    "expected_intent": null,
+    "expected_rule_intent": null
+  },
+  {
+    "id": 54,
+    "category": "4_off_topic_no_banking_words",
+    "subcategory": "fitness",
+    "query": "give me some tips for running a half marathon",
+    "expected_domain_validity": false,
+    "expected_intent": null,
+    "expected_rule_intent": null
+  },
+  {
+    "id": 55,
+    "category": "4_off_topic_no_banking_words",
+    "subcategory": "art",
+    "query": "who painted the Mona Lisa",
+    "expected_domain_validity": false,
+    "expected_intent": null,
+    "expected_rule_intent": null
+  },
+  {
+    "id": 56,
+    "category": "4_off_topic_no_banking_words",
+    "subcategory": "nature",
+    "query": "why do leaves turn yellow during autumn",
+    "expected_domain_validity": false,
+    "expected_intent": null,
+    "expected_rule_intent": null
+  },
+  {
+    "id": 57,
+    "category": "4_off_topic_no_banking_words",
+    "subcategory": "music",
+    "query": "recommend a playlist for studying deep focus",
+    "expected_domain_validity": false,
+    "expected_intent": null,
+    "expected_rule_intent": null
+  },
+  {
+    "id": 58,
+    "category": "4_off_topic_no_banking_words",
+    "subcategory": "health",
+    "query": "what are the symptoms of seasonal allergies",
+    "expected_domain_validity": false,
+    "expected_intent": null,
+    "expected_rule_intent": null
+  },
+  {
+    "id": 59,
+    "category": "4_off_topic_no_banking_words",
+    "subcategory": "language",
+    "query": "teach me basic conversational French phrases",
+    "expected_domain_validity": false,
+    "expected_intent": null,
+    "expected_rule_intent": null
+  },
+  {
+    "id": 60,
+    "category": "4_off_topic_no_banking_words",
+    "subcategory": "astronomy",
+    "query": "how many moons does Jupiter have",
+    "expected_domain_validity": false,
+    "expected_intent": null,
+    "expected_rule_intent": null
+  },
+  {
+    "id": 61,
+    "category": "5_adversarial_off_topic_banking_words",
+    "subcategory": "programming",
+    "query": "write a C++ class to simulate an ATM cash dispenser algorithm",
+    "expected_domain_validity": false,
+    "expected_intent": null,
+    "expected_rule_intent": null
+  },
+  {
+    "id": 62,
+    "category": "5_adversarial_off_topic_banking_words",
+    "subcategory": "programming",
+    "query": "how to connect PostgreSQL database with Django to store bank transactions",
+    "expected_domain_validity": false,
+    "expected_intent": null,
+    "expected_rule_intent": null
+  },
+  {
+    "id": 63,
+    "category": "5_adversarial_off_topic_banking_words",
+    "subcategory": "programming",
+    "query": "fix this python bug where float rounding messes up financial balance calculations",
+    "expected_domain_validity": false,
+    "expected_intent": null,
+    "expected_rule_intent": null
+  },
+  {
+    "id": 64,
+    "category": "5_adversarial_off_topic_banking_words",
+    "subcategory": "programming",
+    "query": "build a responsive CSS navbar with a banking theme",
+    "expected_domain_validity": false,
+    "expected_intent": null,
+    "expected_rule_intent": null
+  },
+  {
+    "id": 65,
+    "category": "5_adversarial_off_topic_banking_words",
+    "subcategory": "weather",
+    "query": "will it rain today near the downtown bank branch",
+    "expected_domain_validity": false,
+    "expected_intent": null,
+    "expected_rule_intent": null
+  },
+  {
+    "id": 66,
+    "category": "5_adversarial_off_topic_banking_words",
+    "subcategory": "weather",
+    "query": "what is the temperature outside my local bank",
+    "expected_domain_validity": false,
+    "expected_intent": null,
+    "expected_rule_intent": null
+  },
+  {
+    "id": 67,
+    "category": "5_adversarial_off_topic_banking_words",
+    "subcategory": "entertainment",
+    "query": "tell me a funny movie scene about bank robbers stealing money",
+    "expected_domain_validity": false,
+    "expected_intent": null,
+    "expected_rule_intent": null
+  },
+  {
+    "id": 68,
+    "category": "5_adversarial_off_topic_banking_words",
+    "subcategory": "entertainment",
+    "query": "write a song lyric about losing all your money at a casino",
+    "expected_domain_validity": false,
+    "expected_intent": null,
+    "expected_rule_intent": null
+  },
+  {
+    "id": 69,
+    "category": "5_adversarial_off_topic_banking_words",
+    "subcategory": "entertainment",
+    "query": "give me a riddle where the answer is a debit card",
+    "expected_domain_validity": false,
+    "expected_intent": null,
+    "expected_rule_intent": null
+  },
+  {
+    "id": 70,
+    "category": "5_adversarial_off_topic_banking_words",
+    "subcategory": "entertainment",
+    "query": "who played the banker in Monopoly game tournament",
+    "expected_domain_validity": false,
+    "expected_intent": null,
+    "expected_rule_intent": null
+  },
+  {
+    "id": 71,
+    "category": "5_adversarial_off_topic_banking_words",
+    "subcategory": "general_knowledge",
+    "query": "what is the capital city of Japan and what money currency do they use",
+    "expected_domain_validity": false,
+    "expected_intent": null,
+    "expected_rule_intent": null
+  },
+  {
+    "id": 72,
+    "category": "5_adversarial_off_topic_banking_words",
+    "subcategory": "general_knowledge",
+    "query": "who was the famous scientist on the old English pound banknote",
+    "expected_domain_validity": false,
+    "expected_intent": null,
+    "expected_rule_intent": null
+  },
+  {
+    "id": 73,
+    "category": "5_adversarial_off_topic_banking_words",
+    "subcategory": "history",
+    "query": "explain how ancient Mesopotamians developed early banking on clay tablets",
+    "expected_domain_validity": false,
+    "expected_intent": null,
+    "expected_rule_intent": null
+  },
+  {
+    "id": 74,
+    "category": "5_adversarial_off_topic_banking_words",
+    "subcategory": "poetry",
+    "query": "write a poem about Scrooge McDuck diving into gold coins",
+    "expected_domain_validity": false,
+    "expected_intent": null,
+    "expected_rule_intent": null
+  },
+  {
+    "id": 75,
+    "category": "6_personal_vs_general_ambiguity",
+    "subcategory": "personal_transactions",
+    "query": "check my past payment records",
+    "expected_domain_validity": true,
+    "expected_intent": "transactions",
+    "expected_rule_intent": "transactions"
+  },
+  {
+    "id": 76,
+    "category": "6_personal_vs_general_ambiguity",
+    "subcategory": "personal_transactions",
+    "query": "give me my account ledger for this week",
+    "expected_domain_validity": true,
+    "expected_intent": "transactions",
+    "expected_rule_intent": "transactions"
+  },
+  {
+    "id": 77,
+    "category": "6_personal_vs_general_ambiguity",
+    "subcategory": "personal_transactions",
+    "query": "can i see my transaction logs",
+    "expected_domain_validity": true,
+    "expected_intent": "transactions",
+    "expected_rule_intent": "transactions"
+  },
+  {
+    "id": 78,
+    "category": "6_personal_vs_general_ambiguity",
+    "subcategory": "third_party_wealth",
+    "query": "how much money does the richest man in the world possess",
+    "expected_domain_validity": false,
+    "expected_intent": null,
+    "expected_rule_intent": null
+  },
+  {
+    "id": 79,
+    "category": "6_personal_vs_general_ambiguity",
+    "subcategory": "third_party_wealth",
+    "query": "what is Warren Buffett's current net worth",
+    "expected_domain_validity": false,
+    "expected_intent": null,
+    "expected_rule_intent": null
+  },
+  {
+    "id": 80,
+    "category": "6_personal_vs_general_ambiguity",
+    "subcategory": "general_history",
+    "query": "history of the Great Depression financial crash of 1929",
+    "expected_domain_validity": false,
+    "expected_intent": null,
+    "expected_rule_intent": null
+  },
+  {
+    "id": 81,
+    "category": "6_personal_vs_general_ambiguity",
+    "subcategory": "third_party_wealth",
+    "query": "how much money do Hollywood actors make on average",
+    "expected_domain_validity": false,
+    "expected_intent": null,
+    "expected_rule_intent": null
+  },
+  {
+    "id": 82,
+    "category": "6_personal_vs_general_ambiguity",
+    "subcategory": "general_history",
+    "query": "history of gold standard in international currency",
+    "expected_domain_validity": false,
+    "expected_intent": null,
+    "expected_rule_intent": null
+  },
+  {
+    "id": 83,
+    "category": "6_personal_vs_general_ambiguity",
+    "subcategory": "general_history",
+    "query": "did medieval knights create modern banking systems",
+    "expected_domain_validity": false,
+    "expected_intent": null,
+    "expected_rule_intent": null
+  },
+  {
+    "id": 84,
+    "category": "6_personal_vs_general_ambiguity",
+    "subcategory": "third_party_wealth",
+    "query": "what is Mark Zuckerberg's salary",
+    "expected_domain_validity": false,
+    "expected_intent": null,
+    "expected_rule_intent": null
+  },
+  {
+    "id": 85,
+    "category": "7_natural_language_variations",
+    "subcategory": "slang_balance",
+    "query": "how much moolah is sittin in my account",
+    "expected_domain_validity": true,
+    "expected_intent": "balance",
+    "expected_rule_intent": "balance"
+  },
+  {
+    "id": 86,
+    "category": "7_natural_language_variations",
+    "subcategory": "slang_spend",
+    "query": "i wanna see how much dough i spent",
+    "expected_domain_validity": true,
+    "expected_intent": "spend",
+    "expected_rule_intent": "spend"
+  },
+  {
+    "id": 87,
+    "category": "7_natural_language_variations",
+    "subcategory": "slang_transfer",
+    "query": "send twenty grand to Sarah right now",
+    "expected_domain_validity": true,
+    "expected_intent": "transfer",
+    "expected_rule_intent": "transfer"
+  },
+  {
+    "id": 88,
+    "category": "7_natural_language_variations",
+    "subcategory": "slang_profile",
+    "query": "gimme my credit score real quick",
+    "expected_domain_validity": true,
+    "expected_intent": "profile",
+    "expected_rule_intent": "profile"
+  },
+  {
+    "id": 89,
+    "category": "7_natural_language_variations",
+    "subcategory": "indirect_spend",
+    "query": "where did all my salary disappear to",
+    "expected_domain_validity": true,
+    "expected_intent": "spend",
+    "expected_rule_intent": "spend"
+  },
+  {
+    "id": 90,
+    "category": "7_natural_language_variations",
+    "subcategory": "indirect_balance",
+    "query": "any idea what my current account balance looks like",
+    "expected_domain_validity": true,
+    "expected_intent": "balance",
+    "expected_rule_intent": "balance"
+  },
+  {
+    "id": 91,
+    "category": "7_natural_language_variations",
+    "subcategory": "colloquial_transfer",
+    "query": "can u shoot some funds over to Alex",
+    "expected_domain_validity": true,
+    "expected_intent": "transfer",
+    "expected_rule_intent": "transfer"
+  },
+  {
+    "id": 92,
+    "category": "7_natural_language_variations",
+    "subcategory": "natural_statement",
+    "query": "show me my statements from last week please",
+    "expected_domain_validity": true,
+    "expected_intent": "transactions",
+    "expected_rule_intent": "transactions"
+  },
+  {
+    "id": 93,
+    "category": "8_mixed_compound_intents",
+    "subcategory": "banking_plus_unrelated",
+    "query": "what is my balance and also tell me a joke",
+    "expected_domain_validity": false,
+    "expected_intent": null,
+    "expected_rule_intent": null
+  },
+  {
+    "id": 94,
+    "category": "8_mixed_compound_intents",
+    "subcategory": "multiple_banking_intents",
+    "query": "show my balance and transfer 500 to Bob",
+    "expected_domain_validity": true,
+    "expected_intent": null,
+    "expected_rule_intent": null
+  },
+  {
+    "id": 95,
+    "category": "8_mixed_compound_intents",
+    "subcategory": "policy_plus_action",
+    "query": "how do i transfer money and what is the transfer limit",
+    "expected_domain_validity": true,
+    "expected_intent": null,
+    "expected_rule_intent": null
+  },
+  {
+    "id": 96,
+    "category": "8_mixed_compound_intents",
+    "subcategory": "spend_keyword_policy_question",
+    "query": "what is the maximum amount of money i can spend on my debit card daily",
+    "expected_domain_validity": true,
+    "expected_intent": null,
+    "expected_rule_intent": null
+  },
+  {
+    "id": 97,
+    "category": "8_mixed_compound_intents",
+    "subcategory": "balance_keyword_fee_question",
+    "query": "is there any fee to check my balance at an ATM",
+    "expected_domain_validity": true,
+    "expected_intent": null,
+    "expected_rule_intent": null
+  },
+  {
+    "id": 98,
+    "category": "8_mixed_compound_intents",
+    "subcategory": "transfer_keyword_fee_question",
+    "query": "can i transfer funds to an international account and how much does it cost",
+    "expected_domain_validity": true,
+    "expected_intent": null,
+    "expected_rule_intent": null
+  },
+  {
+    "id": 99,
+    "category": "8_mixed_compound_intents",
+    "subcategory": "banking_plus_unrelated",
+    "query": "check my recent transactions and tell me the weather",
+    "expected_domain_validity": false,
+    "expected_intent": null,
+    "expected_rule_intent": null
+  },
+  {
+    "id": 100,
+    "category": "8_mixed_compound_intents",
+    "subcategory": "multiple_banking_intents",
+    "query": "i want to update my profile details and check home loan interest rate",
+    "expected_domain_validity": true,
+    "expected_intent": null,
+    "expected_rule_intent": null
+  }
+]
