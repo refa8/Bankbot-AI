@@ -1,6 +1,11 @@
 import unittest
 
-from app.services.query_policy import classify_rule_intent, is_banking_query
+from app.services.query_policy import (
+    classify_rule_intent,
+    is_banking_query,
+    match_semantic_intent,
+    normalize_query,
+)
 
 
 class QueryPolicyTests(unittest.TestCase):
@@ -144,6 +149,70 @@ class QueryPolicyTests(unittest.TestCase):
         ]
         for query, expected_intent in test_cases:
             self.assertEqual(classify_rule_intent(query), expected_intent, f"intent mismatch for: {query}")
+
+    def test_normalization_contractions_and_repeated_chars(self):
+        """Test that query normalization expands contractions, strips excess punctuation, and compresses repeats."""
+        self.assertEqual(normalize_query("what's my balance???"), "what is my balance")
+        self.assertEqual(normalize_query("heyyy bot"), "hey bot")
+        self.assertEqual(normalize_query("can u shoot some funds!"), "can you shoot some funds")
+        self.assertEqual(normalize_query("where's my salary???"), "where is my salary")
+        self.assertEqual(normalize_query("pleaaase help me"), "please help me")
+
+    def test_semantic_fallback_natural_language_variations(self):
+        """Test that semantic fallback correctly routes natural phrasing without exact keyword matches."""
+        variations = [
+            ("how much moolah is sittin in my account", "balance"),
+            ("where did all my salary disappear to", "spend"),
+            ("cya later", "goodbye"),
+            ("peace out", "goodbye"),
+            ("yo bankbot", "greeting"),
+            ("good day assistant", "greeting"),
+            ("check my past payment records", "transactions"),
+            ("give me my account ledger for this week", "transactions"),
+        ]
+        for query, expected in variations:
+            allowed, _ = is_banking_query(query)
+            self.assertTrue(allowed, f"Query should be allowed by domain gating: {query}")
+            self.assertEqual(classify_rule_intent(query), expected, f"Semantic mismatch for: {query}")
+
+    def test_ambiguous_and_uncertain_queries_route_to_llm(self):
+        """Test that queries with weak similarity or close runner-up scores fall back safely to LLM."""
+        ambiguous_queries = [
+            "tell me about financial aspects",
+            "what about my money situation",
+            "banking options overview",
+        ]
+        for query in ambiguous_queries:
+            self.assertEqual(classify_rule_intent(query), "llm", f"Ambiguous query must fall through to llm: {query}")
+
+    def test_off_topic_queries_never_reach_semantic_action(self):
+        """Test that off-topic queries are strictly rejected and never trigger semantic action routing."""
+        off_topic_queries = [
+            "what is Mark Zuckerberg's salary",
+            "tell me a joke about money",
+            "python coding for banking balance",
+            "weather forecast near my bank",
+            "how to bake a cake with bank butter",
+        ]
+        for query in off_topic_queries:
+            allowed, _ = is_banking_query(query)
+            self.assertFalse(allowed, f"Off-topic query should be rejected by domain gate: {query}")
+            self.assertEqual(classify_rule_intent(query), "llm", f"Off-topic query must fall through to llm: {query}")
+
+    def test_transfer_safety_requires_explicit_action_evidence(self):
+        """Test that transfer intent cannot be triggered by mere semantic similarity without explicit action verbs."""
+        # Queries without explicit transfer action verbs (send, transfer, pay, wire, shoot) must NOT resolve to 'transfer'
+        unsafe_transfer_queries = [
+            "money for Bob",
+            "Bob needs funds",
+            "thinking about money movement",
+        ]
+        for query in unsafe_transfer_queries:
+            self.assertNotEqual(
+                classify_rule_intent(query),
+                "transfer",
+                f"Query lacking explicit transfer action must NOT route to transfer: {query}"
+            )
 
 
 if __name__ == "__main__":
