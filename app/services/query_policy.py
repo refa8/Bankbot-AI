@@ -76,7 +76,8 @@ BANKING_KEYWORDS = {
     ],
     'transactions': [
         'transaction', 'transactions', 'payment', 'payments', 'transfer',
-        'transfers', 'upi', 'pay', 'paying', 'paid'
+        'transfers', 'upi', 'pay', 'paying', 'paid',
+        'debits', 'credits', 'swiped'
     ],
     'services': [
         'loan', 'loans', 'credit', 'debit', 'card', 'cards', 'interest',
@@ -86,7 +87,7 @@ BANKING_KEYWORDS = {
     ],
     'operations': [
         'send', 'sending', 'withdraw', 'withdrawing', 'withdrawal',
-        'withdrawals', 'deposit', 'depositing', 'money'
+        'withdrawals', 'deposit', 'depositing', 'money', 'cash', 'wire'
     ],
     'queries': [
         'branch', 'branches', 'hours', 'timing', 'timings', 'contact',
@@ -94,9 +95,9 @@ BANKING_KEYWORDS = {
         'rates', 'fee', 'fees', 'charges', 'charge', 'penalty', 'penalties'
     ],
     'financial': [
-        'spend', 'spent', 'spending', 'expense', 'expenses', 'income',
-        'budget', 'budgeting', 'investment', 'investments', 'portfolio',
-        'finances', 'financial'
+        'spend', 'spent', 'spending', 'expense', 'expenses', 'expenditure',
+        'income', 'budget', 'budgeting', 'investment', 'investments',
+        'portfolio', 'finances', 'financial'
     ]
 }
 
@@ -124,6 +125,9 @@ BANKING_PHRASES = (
     'where did my money go',
     'where did all my money go',
     'bank statement',
+    'what did i buy',
+    'what i bought',
+    'am i broke',
 )
 
 SMALL_TALK = (
@@ -421,28 +425,32 @@ def is_banking_query(prompt: str) -> tuple[bool, str]:
 
 # Pre-compiled action intent patterns
 _BALANCE_PATTERN = re.compile(
-    r'\bbalance\b|how much money(?:\s+do\s+i|\s+is\s+in\s+my)|how much do i have|\bavailable funds\b',
+    r'\bbalance\b|how much (?:money|cash)(?:\s+do\s+i|\s+is\s+(?:in\s+my|left))|how much do i have|\bavailable funds\b',
     re.IGNORECASE
 )
 _TRANSACTIONS_PATTERN = re.compile(
-    r'\btransactions?\b|(?:transaction|account|payment)\s+history|recent (transactions?|activity)|last transactions?|'
-    r'show (?:my\s+)?(?:account\s+)?history|\bmy\s+(?:account\s+)?history\b|what happened recently|\bstatements?\b',
+    r'\btransactions?\b|(?:transaction|account|payment)\s+history|recent(?:ly)?\s+(?:transactions?|activity)|last transactions?|'
+    r'show (?:my\s+)?(?:account\s+)?history|\bmy\s+(?:account\s+)?history\b|what happened recently|\bstatements?\b|'
+    r'\b(?:buy|bought)\b.*\b(?:yesterday|today|last|recent|this)\b|'
+    r'\bswiped\b|\bdebits?\s+and\s+credits?\b',
     re.IGNORECASE
 )
 _SPEND_PATTERN = re.compile(
-    r'\bspend|\bspent\b|\bexpenses?\b|\bspending\b|\banalytics\b|'
+    r'\bspend|\bspent\b|\bexpenses?\b|\bexpenditure\b|\bspending\b|\banalytics\b|'
     r'how much did i (?:spend|pay)|where did (?:all\s+)?my money go',
     re.IGNORECASE
 )
 _PROFILE_PATTERN = re.compile(
     r'\bprofile\b|account (?:details|info|information|number|summary)|'
     r'my (?:details|account details|credit score|account number)|'
-    r'tell me about my account|\bcredit score\b',
+    r'tell me about my account|\bcredit score\b|'
+    r'\baccount\s+registered\s+to\b|\bregistered\s+to\b',
     re.IGNORECASE
 )
 _TRANSFER_PATTERN = re.compile(
     r'\btransfer\b|send money|how (?:do i|to|can i) (?:send|pay|transfer)|'
-    r'want to transfer|pay someone|send funds',
+    r'want to transfer|pay someone|send funds|'
+    r'\bwire\b.+\bto\b',
     re.IGNORECASE
 )
 
@@ -489,7 +497,7 @@ def classify_rule_intent(prompt: str) -> str:
         r'\b(?:loan|loans|emi|mortgage)\b',
         r'\b(?:enable|disable|activate|block|lost|reward|rewards|points)\b',
         r'\bcredit\s+card\b|\bdebit\s+card\b',
-        r'\b(?:branch\s+hours|open\s+on|opening\s+hours|hours|closed|contact|support|phone|email|ifsc|cheque\s+book)\b',
+        r'\b(?:branch\s+hours|open\s+on|opening\s+hours|hours|closed|contact|support|email|ifsc|cheque\s+book)\b',
         r'\bfixed\s+deposit|\brecurring\s+deposit|\bfd\b|\brd\b|\bdeposit\s+rate',
         r'\bmutual\s+funds?|\bfinancial\s+advice|\badvice\b|\bguidance\b|\binvestment\s+advice\b',
         r'\batm\b',

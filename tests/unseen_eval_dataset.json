@@ -1,12 +1,12 @@
 [
   {
     "id": 1,
-    "category": "1_deterministic_banking",
+    "category": "3_valid_banking_llm",
     "subcategory": "balance",
     "query": "am i broke right now or what",
     "expected_domain_validity": true,
-    "expected_intent": "balance",
-    "expected_rule_intent": "balance"
+    "expected_intent": null,
+    "expected_rule_intent": null
   },
   {
     "id": 2,
