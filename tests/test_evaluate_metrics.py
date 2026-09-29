@@ -16,6 +16,7 @@ import os
 import sys
 import tempfile
 import unittest
+from unittest.mock import Mock, patch
 
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if PROJECT_ROOT not in sys.path:
@@ -34,6 +35,7 @@ from evaluate_metrics import (
     generate_deterministic_answer,
     load_dataset,
     run_classifier,
+    run_ollama_inference,
     verify_answer_correctness,
 )
 
@@ -438,6 +440,167 @@ class TestComputeLatencyStats(unittest.TestCase):
         self.assertEqual(stats["count"], 100)
         self.assertEqual(stats["median_ms"], 50.5)
         self.assertEqual(stats["p95_ms"], 95.0)
+
+
+# ---------------------------------------------------------------------------
+# Tests for live Ollama evaluation (all HTTP is mocked)
+# ---------------------------------------------------------------------------
+
+class TestOllamaEvaluation(unittest.TestCase):
+    @staticmethod
+    def _response(lines):
+        response = Mock()
+        response.raise_for_status.return_value = None
+        response.iter_lines.return_value = lines
+        response.__enter__ = Mock(return_value=response)
+        response.__exit__ = Mock(return_value=False)
+        return response
+
+    @patch("evaluate_metrics.requests.post")
+    def test_streamed_inference_records_response_and_timings(self, post):
+        post.return_value = self._response([
+            b'{"response":"The UPI limit is ","done":false}',
+            b'{"response":"Rs. 1,00,000.","done":false}',
+            b'{"done":true}',
+        ])
+        result = run_ollama_inference("test prompt")
+        self.assertEqual(result["status"], "success")
+        self.assertEqual(result["response"], "The UPI limit is Rs. 1,00,000.")
+        self.assertIsNotNone(result["time_to_first_token_ms"])
+        self.assertIsNotNone(result["generation_latency_ms"])
+        post.assert_called_once()
+
+    @patch("evaluate_metrics.requests.post")
+    def test_invalid_stream_is_recorded_separately(self, post):
+        post.return_value = self._response([b'not-json'])
+        result = run_ollama_inference("test prompt")
+        self.assertEqual(result["status"], "invalid_response")
+        self.assertIsNone(result["response"])
+        self.assertIn("invalid", result["error"].lower())
+
+    @patch("evaluate_metrics.requests.post")
+    def test_timeout_is_recorded_separately(self, post):
+        import requests
+        post.side_effect = requests.exceptions.Timeout()
+        result = run_ollama_inference("test prompt")
+        self.assertEqual(result["status"], "timeout")
+        self.assertIsNone(result["response"])
+
+    @patch("evaluate_metrics.requests.post")
+    def test_live_llm_route_is_human_review_not_automatic_success(self, post):
+        post.return_value = self._response([
+            b'{"response":"The UPI limit is Rs. 1,00,000.","done":false}',
+            b'{"done":true}',
+        ])
+        item = {
+            "id": 1,
+            "query": "What is the UPI limit?",
+            "expected_domain_validity": True,
+            "expected_rule_intent": None,
+        }
+        result = evaluate_query(item, eval_ollama=True)
+        self.assertEqual(result["route"], "llm")
+        self.assertEqual(result["ollama_status"], "success")
+        self.assertEqual(result["response_validation_status"], "passed")
+        self.assertTrue(result["human_review_required"])
+        self.assertIsNone(result["answer_correct"])
+        self.assertEqual(result["raw_ollama_response"], result["actual_response"])
+        post.assert_called_once()
+
+    @patch("evaluate_metrics.requests.post")
+    def test_policy_rejected_response_is_separate_from_transport_success(self, post):
+        post.return_value = self._response([
+            b'{"response":"Here is a Python script: def transfer(): pass", "done":false}',
+            b'{"done":true}',
+        ])
+        item = {
+            "id": 1,
+            "query": "What is the UPI limit?",
+            "expected_domain_validity": True,
+            "expected_rule_intent": None,
+        }
+        result = evaluate_query(item, eval_ollama=True)
+        self.assertEqual(result["ollama_status"], "success")
+        self.assertEqual(result["response_validation_status"], "rejected")
+        self.assertIn("Python script", result["raw_ollama_response"])
+        self.assertNotEqual(result["actual_response"], result["raw_ollama_response"])
+        self.assertFalse(result["answer_correct"])
+        self.assertFalse(result["human_review_required"])
+        self.assertIsNone(result["factuality_pass"])
+
+    @patch("evaluate_metrics.requests.post")
+    def test_failed_request_does_not_run_response_validation(self, post):
+        import requests
+        post.side_effect = requests.exceptions.Timeout()
+        item = {
+            "id": 1,
+            "query": "What is the UPI limit?",
+            "expected_domain_validity": True,
+            "expected_rule_intent": None,
+        }
+        result = evaluate_query(item, eval_ollama=True)
+        self.assertEqual(result["ollama_status"], "timeout")
+        self.assertEqual(result["response_validation_status"], "not_run")
+        self.assertIsNone(result["answer_correct"])
+        self.assertIsNone(result["actual_response"])
+
+    @patch("evaluate_metrics.time.perf_counter", side_effect=[0.0, 0.01, 0.02, 0.03, 0.05, 0.06])
+    @patch("evaluate_metrics.requests.post")
+    def test_end_to_end_latency_spans_routing_and_streaming(self, post, perf_counter):
+        post.return_value = self._response([
+            b'{"response":"The UPI limit is Rs. 1,00,000.", "done":false}',
+            b'{"done":true}',
+        ])
+        item = {
+            "id": 1,
+            "query": "What is the UPI limit?",
+            "expected_domain_validity": True,
+            "expected_rule_intent": None,
+        }
+        result = evaluate_query(item, eval_ollama=True)
+        self.assertEqual(result["routing_latency_ms"], 10.0)
+        self.assertEqual(result["generation_latency_ms"], 30.0)
+        self.assertEqual(result["end_to_end_latency_ms"], 60.0)
+
+    @patch("evaluate_metrics.requests.post")
+    def test_deterministic_and_blocked_routes_do_not_call_ollama(self, post):
+        deterministic = {
+            "id": 1, "query": "What is my balance?",
+            "expected_domain_validity": True, "expected_rule_intent": "balance",
+        }
+        blocked = {
+            "id": 2, "query": "Tell me a joke",
+            "expected_domain_validity": False, "expected_rule_intent": None,
+        }
+        self.assertEqual(evaluate_query(deterministic, eval_ollama=True)["route"], "deterministic")
+        self.assertEqual(evaluate_query(blocked, eval_ollama=True)["route"], "blocked")
+        post.assert_not_called()
+
+    @patch("evaluate_metrics.requests.post")
+    def test_ollama_summary_counts_real_successes_only(self, post):
+        post.return_value = self._response([
+            b'{"response":"The UPI limit is Rs. 1,00,000.","done":false}',
+            b'{"done":true}',
+        ])
+        path = _write_tmp_dataset([{
+            "id": 1, "query": "What is the UPI limit?",
+            "expected_domain_validity": True, "expected_rule_intent": None,
+        }])
+        try:
+            evaluation = evaluate_datasets([path], eval_ollama=True)
+            summary = evaluation["ollama_evaluation"]
+            self.assertTrue(summary["evaluated"])
+            self.assertEqual(summary["requests_made"], 1)
+            self.assertEqual(summary["succeeded"], 1)
+            self.assertEqual(summary["failed"], 0)
+            self.assertEqual(summary["response_validation_status_counts"], {"passed": 1})
+            latency = evaluation["latency_metrics"]
+            self.assertIn("overall_routing", latency)
+            self.assertTrue(latency["overall"]["deprecated"])
+            self.assertEqual(latency["overall"]["replacement"], "overall_routing")
+            self.assertEqual(latency["ollama_end_to_end"]["count"], 1)
+        finally:
+            os.remove(path)
 
 
 # ---------------------------------------------------------------------------

@@ -38,12 +38,21 @@ import sys
 import time
 from typing import Any, Dict, List, Optional, Tuple
 
+import requests
+
 PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
 if PROJECT_ROOT not in sys.path:
     sys.path.insert(0, PROJECT_ROOT)
 
-from app.services.query_policy import classify_rule_intent, is_banking_query, normalize_query
+from app.services.query_policy import (
+    OFF_TOPIC_REFUSAL,
+    classify_rule_intent,
+    is_banking_query,
+    normalize_query,
+    validate_ollama_response,
+)
 from app.utils.formatting import format_currency
+from config import settings
 
 REGRESSION_PATH = os.path.join(PROJECT_ROOT, "tests", "query_eval_dataset.json")
 UNSEEN_PATH     = os.path.join(PROJECT_ROOT, "tests", "unseen_eval_dataset.json")
@@ -72,6 +81,139 @@ DEFAULT_MOCK_USER: Dict[str, Any] = {
         {"date": "2024-11-25", "desc": "Grocery Shopping", "cat": "Food", "amt": -850, "type": "Debit"},
     ],
 }
+
+
+BANK_KB = """
+SECUREBANK OFFICIAL POLICIES:
+1. SAVINGS INTEREST: 4.5% p.a., credited quarterly.
+2. HOME LOANS: Starting at 8.75% p.a. for amounts > 50 Lakhs.
+3. CREDIT CARDS: 'Platinum' (Rs. 1000/yr fee) and 'Gold' (Free for life).
+4. BRANCH HOURS: Mon-Sat, 9:30 AM - 4:00 PM. Closed on 2nd/4th Saturdays.
+5. UPI LIMITS: Rs. 1,00,000 per day.
+6. SUPPORT: Call 1800-123-4567 or email support@securebank.com.
+7. FIXED DEPOSITS: 6.5% for 1 year, 7.2% for 3 years (Senior citizens +0.5%).
+"""
+
+
+def build_strict_banking_prompt(user_data: Dict[str, Any], user_query: str) -> str:
+    """Build the same banking prompt shape used by the Streamlit application."""
+    recent = "\n".join(
+        f"- {t['date']}: {t['desc']} ({t['cat']}) | Amount: Rs. {t['amt']}"
+        for t in user_data.get("transactions", [])[:5]
+    )
+
+    return f"""You are a STRICTLY REGULATED banking assistant for SecureBank. You MUST follow these rules:
+
+CRITICAL RULES:
+1. ONLY answer questions about: account balances, transactions, transfers, loans, credit cards, banking policies, and financial services
+2. If asked about ANYTHING else (coding, history, weather, jokes, general knowledge, recipes, travel), respond EXACTLY with: "I apologize, but I can only assist with banking and financial queries."
+3. Do NOT provide any information outside banking/finance domain
+4. Do NOT explain why you can't answer non-banking questions
+5. Keep responses concise and professional
+
+BANK POLICIES (Official Information):
+{BANK_KB}
+
+USER DATA (Confidential):
+- Name: {user_data.get('name', 'User')}
+- Balance: Rs. {user_data.get('balance', 0):,.2f}
+- Account Type: {user_data.get('type', 'account')}
+- Credit Score: {user_data.get('credit_score', 'N/A')}
+- Recent Transactions:
+{recent}
+
+USER QUESTION: {user_query}
+
+YOUR RESPONSE (banking-only, max 300 words):"""
+
+
+def run_ollama_inference(prompt: str) -> Dict[str, Any]:
+    """Execute one streamed Ollama request and return response, status, and timings."""
+    result: Dict[str, Any] = {
+        "status": "service_error",
+        "response": None,
+        "error": None,
+        "time_to_first_token_ms": None,
+        "generation_latency_ms": None,
+    }
+    payload = {
+        "model": settings.OLLAMA_MODEL,
+        "prompt": prompt,
+        "stream": True,
+        "options": {"temperature": 0.1, "top_p": 0.9, "top_k": 40},
+    }
+    started = time.perf_counter()
+
+    try:
+        with requests.post(
+            f"{settings.OLLAMA_URL.rstrip('/')}/api/generate",
+            json=payload,
+            stream=True,
+            timeout=settings.OLLAMA_TIMEOUT,
+        ) as resp:
+            resp.raise_for_status()
+            chunks: List[str] = []
+            completed = False
+            for line in resp.iter_lines():
+                if not line:
+                    continue
+                try:
+                    item = json.loads(line.decode("utf-8"))
+                except (UnicodeDecodeError, json.JSONDecodeError):
+                    result["status"] = "invalid_response"
+                    result["error"] = "Ollama returned invalid streamed JSON."
+                    return result
+
+                if not isinstance(item, dict):
+                    result["status"] = "invalid_response"
+                    result["error"] = "Ollama returned an invalid response object."
+                    return result
+                if item.get("error"):
+                    error_text = str(item["error"])
+                    result["status"] = "model_unavailable" if "model" in error_text.lower() and "not found" in error_text.lower() else "service_error"
+                    result["error"] = error_text
+                    return result
+
+                chunk = item.get("response", "")
+                if chunk:
+                    if not isinstance(chunk, str):
+                        result["status"] = "invalid_response"
+                        result["error"] = "Ollama returned a non-text response chunk."
+                        return result
+                    if result["time_to_first_token_ms"] is None:
+                        result["time_to_first_token_ms"] = round((time.perf_counter() - started) * 1000.0, 3)
+                    chunks.append(chunk)
+                if item.get("done"):
+                    completed = True
+                    break
+
+            result["generation_latency_ms"] = round((time.perf_counter() - started) * 1000.0, 3)
+            if not completed:
+                result["status"] = "invalid_response"
+                result["error"] = "Ollama stream ended before completion."
+            elif not chunks:
+                result["status"] = "empty_response"
+                result["error"] = "Ollama returned an empty response."
+            else:
+                result["status"] = "success"
+                result["response"] = "".join(chunks)
+    except requests.exceptions.Timeout:
+        result["status"] = "timeout"
+        result["error"] = "Ollama request timed out."
+    except requests.exceptions.ConnectionError:
+        result["status"] = "service_unavailable"
+        result["error"] = "Could not connect to the configured Ollama service."
+    except requests.exceptions.HTTPError as exc:
+        status_code = exc.response.status_code if exc.response is not None else None
+        result["status"] = "model_unavailable" if status_code == 404 else "service_error"
+        result["error"] = f"Ollama HTTP error{f' {status_code}' if status_code else ''}."
+    except requests.exceptions.RequestException as exc:
+        result["status"] = "service_error"
+        result["error"] = f"Ollama request failed: {exc.__class__.__name__}."
+
+    if result["generation_latency_ms"] is None:
+        result["generation_latency_ms"] = round((time.perf_counter() - started) * 1000.0, 3)
+    return result
 
 
 # ---------------------------------------------------------------------------
@@ -350,19 +492,17 @@ def evaluate_query(
     exp_domain = item["expected_domain_validity"]
     exp_intent = item.get("expected_rule_intent")
 
-    # Measure combined routing + deterministic response latency
+    # Measure routing separately from answer generation and LLM inference.
     t0 = time.perf_counter()
     act_domain, domain_reason = is_banking_query(query)
     if act_domain:
         raw_intent = classify_rule_intent(query)
         act_intent = _norm(raw_intent)
-        actual_response = generate_deterministic_answer(act_intent, user)
     else:
         raw_intent = "blocked"
         act_intent = None
-        actual_response = domain_reason
     t1 = time.perf_counter()
-    latency_ms = (t1 - t0) * 1000.0
+    routing_latency_ms = (t1 - t0) * 1000.0
 
     route = determine_route(act_domain, act_intent)
     domain_correct = (act_domain == exp_domain)
@@ -376,14 +516,26 @@ def evaluate_query(
     answer_correct: Optional[bool] = None
     answer_reason: Optional[str] = None
     factuality_pass: Optional[bool] = None
+    actual_response: Optional[str] = None
+    ollama_status = "not_applicable"
+    ollama_error: Optional[str] = None
+    time_to_first_token_ms: Optional[float] = None
+    generation_latency_ms: Optional[float] = None
+    end_to_end_latency_ms: Optional[float] = None
+    raw_ollama_response: Optional[str] = None
+    response_validation_status = "not_applicable"
+    response_validation_reason: Optional[str] = None
+    human_review_required = False
 
     if not act_domain:
         # Off-topic queries: correct if properly blocked
+        actual_response = domain_reason
         answer_correct = not exp_domain
         answer_reason = f"Domain gate refusal: {domain_reason}"
         factuality_pass = True
     elif act_intent is not None:
         # Deterministic banking queries: verify against mock database
+        actual_response = generate_deterministic_answer(act_intent, user)
         is_ans_correct, reason = verify_answer_correctness(act_intent, actual_response, user)
         # An answer is only correct if the classifier chose the correct intent AND data matched
         if exp_intent is not None and act_intent != exp_intent:
@@ -397,13 +549,43 @@ def evaluate_query(
     else:
         # LLM-bound queries
         if eval_ollama:
-            answer_correct = None
-            answer_reason = "Ollama execution enabled but not called in offline mode"
-            factuality_pass = None
+            inference = run_ollama_inference(build_strict_banking_prompt(user, query))
+            ollama_status = inference["status"]
+            ollama_error = inference["error"]
+            raw_ollama_response = inference["response"]
+            time_to_first_token_ms = inference["time_to_first_token_ms"]
+            generation_latency_ms = inference["generation_latency_ms"]
+            # Stop at receipt of the completed stream; policy validation is
+            # deliberately reported separately and is not generation time.
+            end_to_end_latency_ms = round((time.perf_counter() - t0) * 1000.0, 3)
+            if ollama_status == "success":
+                # Match the production post-validation step. Transport success only
+                # means Ollama returned text; it does not establish policy compliance.
+                actual_response = validate_ollama_response(raw_ollama_response, query)
+                if actual_response == OFF_TOPIC_REFUSAL and raw_ollama_response != OFF_TOPIC_REFUSAL:
+                    response_validation_status = "rejected"
+                    response_validation_reason = "Production response policy replaced the generated text with a refusal."
+                    answer_correct = False
+                    answer_reason = "Live Ollama response was rejected by production response policy."
+                    # A policy rejection establishes neither factuality nor a
+                    # semantic answer assessment; keep those dimensions separate.
+                    factuality_pass = None
+                else:
+                    response_validation_status = "passed"
+                    response_validation_reason = "Production response policy accepted the generated text."
+                    # LLM-routed records have no deterministic answer assertions in the current datasets.
+                    answer_reason = "Live Ollama response passed policy validation; semantic correctness requires human review."
+                    human_review_required = True
+            else:
+                actual_response = raw_ollama_response
+                response_validation_status = "not_run"
+                response_validation_reason = "Response validation was not run because inference did not succeed."
+                answer_reason = f"Ollama inference failed ({ollama_status}): {ollama_error}"
         else:
-            answer_correct = None
+            ollama_status = "skipped_offline"
+            response_validation_status = "not_run"
+            response_validation_reason = "Response validation was not run because live Ollama evaluation is disabled."
             answer_reason = "LLM-backed query; live Ollama call not executed"
-            factuality_pass = None
 
     return {
         "id":                     item.get("id"),
@@ -421,13 +603,23 @@ def evaluate_query(
         "both_correct":           both_correct,
         "classification_correct": both_correct,
         "route":                  route,
-        "latency_ms":             round(latency_ms, 3),
+        "latency_ms":             round(routing_latency_ms, 3),
+        "routing_latency_ms":     round(routing_latency_ms, 3),
+        "time_to_first_token_ms": time_to_first_token_ms,
+        "generation_latency_ms":  generation_latency_ms,
+        "end_to_end_latency_ms":  end_to_end_latency_ms,
         "actual_response":        actual_response,
+        "raw_ollama_response":    raw_ollama_response,
+        "response_validation_status": response_validation_status,
+        "response_validation_reason": response_validation_reason,
         "answer_correct":         answer_correct,
         "answer_reason":          answer_reason,
         "safety_pass":            is_safe,
         "safety_violations":      violations,
         "factuality_pass":        factuality_pass,
+        "ollama_status":          ollama_status,
+        "ollama_error":           ollama_error,
+        "human_review_required":  human_review_required,
     }
 
 
@@ -640,25 +832,64 @@ def evaluate_datasets(
     answer_metrics = compute_answer_metrics(results)
     safety_metrics = compute_safety_factuality_metrics(results)
 
-    # Latencies grouped by route
+    # Routing latency is measured for every query; model timings exist only after real inference.
     det_latencies = [r["latency_ms"] for r in results if r["route"] == "deterministic"]
-    llm_latencies = [r["latency_ms"] for r in results if r["route"] == "llm"]
+    llm_routing_latencies = [r["latency_ms"] for r in results if r["route"] == "llm"]
     blk_latencies = [r["latency_ms"] for r in results if r["route"] == "blocked"]
-    all_latencies = [r["latency_ms"] for r in results]
+    all_routing_latencies = [r["latency_ms"] for r in results]
+    llm_generation_latencies = [
+        r["generation_latency_ms"] for r in results
+        if r["route"] == "llm" and r["ollama_status"] == "success" and r["generation_latency_ms"] is not None
+    ]
+    llm_first_token_latencies = [
+        r["time_to_first_token_ms"] for r in results
+        if r["route"] == "llm" and r["ollama_status"] == "success" and r["time_to_first_token_ms"] is not None
+    ]
+    llm_end_to_end_latencies = [
+        r["end_to_end_latency_ms"] for r in results
+        if r["route"] == "llm" and r["ollama_status"] == "success" and r["end_to_end_latency_ms"] is not None
+    ]
 
+    overall_routing_stats = compute_latency_stats(all_routing_latencies)
     latency_metrics = {
         "deterministic": compute_latency_stats(det_latencies),
-        "llm":           compute_latency_stats(llm_latencies),
+        "llm_routing":   compute_latency_stats(llm_routing_latencies),
         "blocked":       compute_latency_stats(blk_latencies),
-        "overall":       compute_latency_stats(all_latencies),
+        "overall_routing": overall_routing_stats,
+        # Backward-compatible alias. Consumers should migrate to overall_routing.
+        "overall": {
+            **overall_routing_stats,
+            "deprecated": True,
+            "replacement": "overall_routing",
+            "description": "Deprecated routing-only aggregate; use overall_routing.",
+        },
+        "ollama_time_to_first_token": compute_latency_stats(llm_first_token_latencies),
+        "ollama_generation": compute_latency_stats(llm_generation_latencies),
+        "ollama_end_to_end": compute_latency_stats(llm_end_to_end_latencies),
     }
 
+    llm_results = [r for r in results if r["route"] == "llm"]
+    successful_ollama = [r for r in llm_results if r["ollama_status"] == "success"]
+    failed_ollama = [
+        r for r in llm_results
+        if r["ollama_status"] not in {"success", "skipped_offline"}
+    ]
+    status_counts = dict(Counter(r["ollama_status"] for r in llm_results))
+    validation_status_counts = dict(Counter(r["response_validation_status"] for r in llm_results))
     ollama_info = {
-        "evaluated": eval_ollama,
-        "status": "evaluated" if eval_ollama else "skipped_offline",
-        "message": (
-            "Live Ollama evaluated"
-            if eval_ollama
+        "evaluated": len(successful_ollama) > 0,
+        "requested": eval_ollama,
+        "status": "evaluated" if successful_ollama else ("failed" if eval_ollama and llm_results else "skipped_offline"),
+        "llm_routed_queries": len(llm_results),
+        "requests_made": len(successful_ollama) + len(failed_ollama),
+        "succeeded": len(successful_ollama),
+        "failed": len(failed_ollama),
+        "skipped": status_counts.get("skipped_offline", 0),
+        "status_counts": status_counts,
+        "response_validation_status_counts": validation_status_counts,
+        "message": "Live Ollama inference completed." if successful_ollama else (
+            "Live Ollama inference was requested but no LLM request succeeded."
+            if eval_ollama and llm_results
             else "Ollama evaluation skipped; deterministic and rule-based pipeline evaluated only."
         ),
     }
@@ -702,7 +933,8 @@ def evaluate_datasets(
                 "timestamp": datetime.now().isoformat(),
                 "dataset_paths": paths,
                 "total_queries": len(results),
-                "ollama_evaluated": eval_ollama,
+                "ollama_requested": eval_ollama,
+                "ollama_evaluated": ollama_info["evaluated"],
                 "mock_user_account": user.get("account", "1234567890"),
             },
             "summary": summary,
@@ -840,7 +1072,7 @@ def print_report(ev: Dict[str, Any], label: str = "") -> None:
     print("--------------------------------------------------------------------------------")
     print(f"  Answerable deterministic queries : {am['total_answerable']} / {total}")
     print(f"  Factual answers verified         : {am['correct']} / {am['total_answerable']} ({am['accuracy_pct']}%)")
-    print(f"  LLM-bound queries (unanswerable) : {am['unanswerable_llm_bound']} (requires live LLM service)")
+    print(f"  LLM-bound queries (unscored)     : {am['unanswerable_llm_bound']} (requires assertions or human review)")
     if am["per_intent"]:
         print("\n  Per-Intent Answer Correctness:")
         for it, st in sorted(am["per_intent"].items()):
@@ -851,14 +1083,23 @@ def print_report(ev: Dict[str, Any], label: str = "") -> None:
     print("--------------------------------------------------------------------------------")
     print("SECTION 3: LATENCY BENCHMARKS (milliseconds)")
     print("--------------------------------------------------------------------------------")
-    print(f"{'Path':<16} {'Count':<8} {'Min(ms)':<10} {'Median(ms)':<12} {'P95(ms)':<10} {'Max(ms)':<10}")
-    print("-" * 68)
-    for pth in ["deterministic", "llm", "blocked", "overall"]:
+    print(f"{'Metric':<30} {'Count':<8} {'Mean(ms)':<11} {'Median(ms)':<12} {'P95(ms)':<11} {'Max(ms)':<11}")
+    print("-" * 88)
+    for pth in [
+        "deterministic",
+        "llm_routing",
+        "blocked",
+        "overall_routing",
+        "ollama_time_to_first_token",
+        "ollama_generation",
+        "ollama_end_to_end",
+    ]:
         st = lm[pth]
         print(
-            f"{pth:<16} {st['count']:<8} {st['min_ms']:<10.2f} "
-            f"{st['median_ms']:<12.2f} {st['p95_ms']:<10.2f} {st['max_ms']:<10.2f}"
+            f"{pth:<30} {st['count']:<8} {st['mean_ms']:<11.2f} "
+            f"{st['median_ms']:<12.2f} {st['p95_ms']:<11.2f} {st['max_ms']:<11.2f}"
         )
+    print("  Note: legacy latency_metrics.overall is a deprecated alias for overall_routing.")
 
     print("")
     print("--------------------------------------------------------------------------------")
@@ -886,6 +1127,10 @@ def print_report(ev: Dict[str, Any], label: str = "") -> None:
     print("--------------------------------------------------------------------------------")
     print(f"  Ollama evaluated       : {om['evaluated']}")
     print(f"  Ollama path status     : {om['status']}")
+    print(f"  Requests made/succeeded/failed : {om['requests_made']}/{om['succeeded']}/{om['failed']}")
+    print(f"  LLM-routed/skipped     : {om['llm_routed_queries']}/{om['skipped']}")
+    print(f"  Response validation    : {om['response_validation_status_counts']}")
+    print("  Transport success and policy validation do not establish semantic answer correctness.")
     print(f"  Notes                  : {om['message']}")
 
     failures = ev["failures"]

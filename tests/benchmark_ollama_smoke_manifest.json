@@ -1,0 +1,50 @@
+{
+  "dataset": "tests/benchmark_ollama_smoke.json",
+  "dataset_version": "1.0.0",
+  "creation_date": "2026-09-29",
+  "source_dataset": "tests/benchmark_700.json",
+  "source_dataset_version": "1.0.0",
+  "total_queries": 30,
+  "selected_query_ids": [
+    251,
+    260,
+    271,
+    280,
+    291,
+    300,
+    311,
+    320,
+    331,
+    340,
+    351,
+    360,
+    371,
+    380,
+    391,
+    400,
+    411,
+    420,
+    431,
+    447,
+    252,
+    282,
+    303,
+    325,
+    345,
+    366,
+    388,
+    668,
+    681,
+    699
+  ],
+  "category_distribution": {
+    "llm_routed_banking": 27,
+    "adversarial_security": 3
+  },
+  "selection_method": "Direct source-record selection. Twenty-seven banking policy records cover all ten policy subcategories and financial guidance; three adversarial/security records cover sensitive-data, fraud, and scam guidance. The 27:3 split approximates the 200:22 distribution of source records that route to the LLM under the current offline policy.",
+  "integrity": {
+    "records_copied_without_rewriting": true,
+    "all_expected_rule_intent_values_are_null": true,
+    "live_ollama_inference_executed_during_creation": false
+  }
+}

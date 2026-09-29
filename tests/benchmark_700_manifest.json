@@ -1,0 +1,61 @@
+{
+  "dataset": "tests/benchmark_700.json",
+  "dataset_version": "1.0.0",
+  "creation_date": "2026-09-29",
+  "total_queries": 700,
+  "category_distribution": {
+    "deterministic_banking": 250,
+    "llm_routed_banking": 200,
+    "off_topic_out_of_scope": 150,
+    "adversarial_security": 100
+  },
+  "id_ranges": {
+    "deterministic_banking": [
+      1,
+      250
+    ],
+    "llm_routed_banking": [
+      251,
+      450
+    ],
+    "off_topic_out_of_scope": [
+      451,
+      600
+    ],
+    "adversarial_security": [
+      601,
+      700
+    ]
+  },
+  "record_source": "All records are newly authored, template-expanded benchmark prompts; none were copied verbatim from existing project datasets.",
+  "schema": {
+    "required_fields": [
+      "id",
+      "category",
+      "subcategory",
+      "query",
+      "expected_domain_validity",
+      "expected_rule_intent"
+    ],
+    "optional_fields": [
+      "source"
+    ],
+    "supported_intents": [
+      "balance",
+      "transactions",
+      "spend",
+      "profile",
+      "transfer",
+      "greeting",
+      "goodbye",
+      "help",
+      null
+    ]
+  },
+  "known_limitations": [
+    "This is a policy-derived benchmark, not an independent held-out benchmark.",
+    "Template expansion may underrepresent spontaneous user language despite varied phrasings.",
+    "The current evaluator has no per-record LLM answer-assertion schema; LLM semantic correctness still requires human review or future assertions.",
+    "Sensitive-data and transfer records test routing expectations, not authorization enforcement or real transaction execution."
+  ]
+}

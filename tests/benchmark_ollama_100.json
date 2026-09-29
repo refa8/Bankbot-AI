@@ -1,0 +1,902 @@
+[
+  {
+    "id": 251,
+    "category": "llm_routed_banking",
+    "subcategory": "upi_limit",
+    "query": "What is the daily UPI limit?",
+    "expected_domain_validity": true,
+    "expected_rule_intent": null,
+    "source": "newly_authored_benchmark_700_v1"
+  },
+  {
+    "id": 252,
+    "category": "llm_routed_banking",
+    "subcategory": "upi_limit",
+    "query": "What is the current UPI limit?",
+    "expected_domain_validity": true,
+    "expected_rule_intent": null,
+    "source": "newly_authored_benchmark_700_v1"
+  },
+  {
+    "id": 255,
+    "category": "llm_routed_banking",
+    "subcategory": "upi_limit",
+    "query": "What is the new customer UPI limit?",
+    "expected_domain_validity": true,
+    "expected_rule_intent": null,
+    "source": "newly_authored_benchmark_700_v1"
+  },
+  {
+    "id": 258,
+    "category": "llm_routed_banking",
+    "subcategory": "upi_limit",
+    "query": "What is the international UPI limit?",
+    "expected_domain_validity": true,
+    "expected_rule_intent": null,
+    "source": "newly_authored_benchmark_700_v1"
+  },
+  {
+    "id": 260,
+    "category": "llm_routed_banking",
+    "subcategory": "upi_limit",
+    "query": "What is the applicable UPI limit?",
+    "expected_domain_validity": true,
+    "expected_rule_intent": null,
+    "source": "newly_authored_benchmark_700_v1"
+  },
+  {
+    "id": 263,
+    "category": "llm_routed_banking",
+    "subcategory": "upi_limit",
+    "query": "What is the bank policy UPI limit?",
+    "expected_domain_validity": true,
+    "expected_rule_intent": null,
+    "source": "newly_authored_benchmark_700_v1"
+  },
+  {
+    "id": 266,
+    "category": "llm_routed_banking",
+    "subcategory": "upi_limit",
+    "query": "What is the mobile banking UPI limit?",
+    "expected_domain_validity": true,
+    "expected_rule_intent": null,
+    "source": "newly_authored_benchmark_700_v1"
+  },
+  {
+    "id": 268,
+    "category": "llm_routed_banking",
+    "subcategory": "upi_limit",
+    "query": "What is the official UPI limit?",
+    "expected_domain_validity": true,
+    "expected_rule_intent": null,
+    "source": "newly_authored_benchmark_700_v1"
+  },
+  {
+    "id": 270,
+    "category": "llm_routed_banking",
+    "subcategory": "upi_limit",
+    "query": "What is the customer UPI limit?",
+    "expected_domain_validity": true,
+    "expected_rule_intent": null,
+    "source": "newly_authored_benchmark_700_v1"
+  },
+  {
+    "id": 271,
+    "category": "llm_routed_banking",
+    "subcategory": "fees",
+    "query": "What daily fees apply to RTGS transfers?",
+    "expected_domain_validity": true,
+    "expected_rule_intent": null,
+    "source": "newly_authored_benchmark_700_v1"
+  },
+  {
+    "id": 272,
+    "category": "llm_routed_banking",
+    "subcategory": "fees",
+    "query": "What current fees apply to RTGS transfers?",
+    "expected_domain_validity": true,
+    "expected_rule_intent": null,
+    "source": "newly_authored_benchmark_700_v1"
+  },
+  {
+    "id": 275,
+    "category": "llm_routed_banking",
+    "subcategory": "fees",
+    "query": "What new customer fees apply to RTGS transfers?",
+    "expected_domain_validity": true,
+    "expected_rule_intent": null,
+    "source": "newly_authored_benchmark_700_v1"
+  },
+  {
+    "id": 278,
+    "category": "llm_routed_banking",
+    "subcategory": "fees",
+    "query": "What international fees apply to RTGS transfers?",
+    "expected_domain_validity": true,
+    "expected_rule_intent": null,
+    "source": "newly_authored_benchmark_700_v1"
+  },
+  {
+    "id": 280,
+    "category": "llm_routed_banking",
+    "subcategory": "fees",
+    "query": "What applicable fees apply to RTGS transfers?",
+    "expected_domain_validity": true,
+    "expected_rule_intent": null,
+    "source": "newly_authored_benchmark_700_v1"
+  },
+  {
+    "id": 283,
+    "category": "llm_routed_banking",
+    "subcategory": "fees",
+    "query": "What bank policy fees apply to RTGS transfers?",
+    "expected_domain_validity": true,
+    "expected_rule_intent": null,
+    "source": "newly_authored_benchmark_700_v1"
+  },
+  {
+    "id": 286,
+    "category": "llm_routed_banking",
+    "subcategory": "fees",
+    "query": "What mobile banking fees apply to RTGS transfers?",
+    "expected_domain_validity": true,
+    "expected_rule_intent": null,
+    "source": "newly_authored_benchmark_700_v1"
+  },
+  {
+    "id": 288,
+    "category": "llm_routed_banking",
+    "subcategory": "fees",
+    "query": "What official fees apply to RTGS transfers?",
+    "expected_domain_validity": true,
+    "expected_rule_intent": null,
+    "source": "newly_authored_benchmark_700_v1"
+  },
+  {
+    "id": 290,
+    "category": "llm_routed_banking",
+    "subcategory": "fees",
+    "query": "What customer fees apply to RTGS transfers?",
+    "expected_domain_validity": true,
+    "expected_rule_intent": null,
+    "source": "newly_authored_benchmark_700_v1"
+  },
+  {
+    "id": 291,
+    "category": "llm_routed_banking",
+    "subcategory": "interest_rate",
+    "query": "What is the daily savings interest rate?",
+    "expected_domain_validity": true,
+    "expected_rule_intent": null,
+    "source": "newly_authored_benchmark_700_v1"
+  },
+  {
+    "id": 292,
+    "category": "llm_routed_banking",
+    "subcategory": "interest_rate",
+    "query": "What is the current savings interest rate?",
+    "expected_domain_validity": true,
+    "expected_rule_intent": null,
+    "source": "newly_authored_benchmark_700_v1"
+  },
+  {
+    "id": 295,
+    "category": "llm_routed_banking",
+    "subcategory": "interest_rate",
+    "query": "What is the new customer savings interest rate?",
+    "expected_domain_validity": true,
+    "expected_rule_intent": null,
+    "source": "newly_authored_benchmark_700_v1"
+  },
+  {
+    "id": 298,
+    "category": "llm_routed_banking",
+    "subcategory": "interest_rate",
+    "query": "What is the international savings interest rate?",
+    "expected_domain_validity": true,
+    "expected_rule_intent": null,
+    "source": "newly_authored_benchmark_700_v1"
+  },
+  {
+    "id": 300,
+    "category": "llm_routed_banking",
+    "subcategory": "interest_rate",
+    "query": "What is the applicable savings interest rate?",
+    "expected_domain_validity": true,
+    "expected_rule_intent": null,
+    "source": "newly_authored_benchmark_700_v1"
+  },
+  {
+    "id": 303,
+    "category": "llm_routed_banking",
+    "subcategory": "interest_rate",
+    "query": "What is the bank policy savings interest rate?",
+    "expected_domain_validity": true,
+    "expected_rule_intent": null,
+    "source": "newly_authored_benchmark_700_v1"
+  },
+  {
+    "id": 306,
+    "category": "llm_routed_banking",
+    "subcategory": "interest_rate",
+    "query": "What is the mobile banking savings interest rate?",
+    "expected_domain_validity": true,
+    "expected_rule_intent": null,
+    "source": "newly_authored_benchmark_700_v1"
+  },
+  {
+    "id": 308,
+    "category": "llm_routed_banking",
+    "subcategory": "interest_rate",
+    "query": "What is the official savings interest rate?",
+    "expected_domain_validity": true,
+    "expected_rule_intent": null,
+    "source": "newly_authored_benchmark_700_v1"
+  },
+  {
+    "id": 310,
+    "category": "llm_routed_banking",
+    "subcategory": "interest_rate",
+    "query": "What is the customer savings interest rate?",
+    "expected_domain_validity": true,
+    "expected_rule_intent": null,
+    "source": "newly_authored_benchmark_700_v1"
+  },
+  {
+    "id": 311,
+    "category": "llm_routed_banking",
+    "subcategory": "loan_eligibility",
+    "query": "What are the daily home loan eligibility requirements?",
+    "expected_domain_validity": true,
+    "expected_rule_intent": null,
+    "source": "newly_authored_benchmark_700_v1"
+  },
+  {
+    "id": 312,
+    "category": "llm_routed_banking",
+    "subcategory": "loan_eligibility",
+    "query": "What are the current home loan eligibility requirements?",
+    "expected_domain_validity": true,
+    "expected_rule_intent": null,
+    "source": "newly_authored_benchmark_700_v1"
+  },
+  {
+    "id": 315,
+    "category": "llm_routed_banking",
+    "subcategory": "loan_eligibility",
+    "query": "What are the new customer home loan eligibility requirements?",
+    "expected_domain_validity": true,
+    "expected_rule_intent": null,
+    "source": "newly_authored_benchmark_700_v1"
+  },
+  {
+    "id": 318,
+    "category": "llm_routed_banking",
+    "subcategory": "loan_eligibility",
+    "query": "What are the international home loan eligibility requirements?",
+    "expected_domain_validity": true,
+    "expected_rule_intent": null,
+    "source": "newly_authored_benchmark_700_v1"
+  },
+  {
+    "id": 320,
+    "category": "llm_routed_banking",
+    "subcategory": "loan_eligibility",
+    "query": "What are the applicable home loan eligibility requirements?",
+    "expected_domain_validity": true,
+    "expected_rule_intent": null,
+    "source": "newly_authored_benchmark_700_v1"
+  },
+  {
+    "id": 323,
+    "category": "llm_routed_banking",
+    "subcategory": "loan_eligibility",
+    "query": "What are the bank policy home loan eligibility requirements?",
+    "expected_domain_validity": true,
+    "expected_rule_intent": null,
+    "source": "newly_authored_benchmark_700_v1"
+  },
+  {
+    "id": 326,
+    "category": "llm_routed_banking",
+    "subcategory": "loan_eligibility",
+    "query": "What are the mobile banking home loan eligibility requirements?",
+    "expected_domain_validity": true,
+    "expected_rule_intent": null,
+    "source": "newly_authored_benchmark_700_v1"
+  },
+  {
+    "id": 328,
+    "category": "llm_routed_banking",
+    "subcategory": "loan_eligibility",
+    "query": "What are the official home loan eligibility requirements?",
+    "expected_domain_validity": true,
+    "expected_rule_intent": null,
+    "source": "newly_authored_benchmark_700_v1"
+  },
+  {
+    "id": 330,
+    "category": "llm_routed_banking",
+    "subcategory": "loan_eligibility",
+    "query": "What are the customer home loan eligibility requirements?",
+    "expected_domain_validity": true,
+    "expected_rule_intent": null,
+    "source": "newly_authored_benchmark_700_v1"
+  },
+  {
+    "id": 331,
+    "category": "llm_routed_banking",
+    "subcategory": "card_security",
+    "query": "How do I daily a lost debit card?",
+    "expected_domain_validity": true,
+    "expected_rule_intent": null,
+    "source": "newly_authored_benchmark_700_v1"
+  },
+  {
+    "id": 332,
+    "category": "llm_routed_banking",
+    "subcategory": "card_security",
+    "query": "How do I current a lost debit card?",
+    "expected_domain_validity": true,
+    "expected_rule_intent": null,
+    "source": "newly_authored_benchmark_700_v1"
+  },
+  {
+    "id": 335,
+    "category": "llm_routed_banking",
+    "subcategory": "card_security",
+    "query": "How do I new customer a lost debit card?",
+    "expected_domain_validity": true,
+    "expected_rule_intent": null,
+    "source": "newly_authored_benchmark_700_v1"
+  },
+  {
+    "id": 338,
+    "category": "llm_routed_banking",
+    "subcategory": "card_security",
+    "query": "How do I international a lost debit card?",
+    "expected_domain_validity": true,
+    "expected_rule_intent": null,
+    "source": "newly_authored_benchmark_700_v1"
+  },
+  {
+    "id": 340,
+    "category": "llm_routed_banking",
+    "subcategory": "card_security",
+    "query": "How do I applicable a lost debit card?",
+    "expected_domain_validity": true,
+    "expected_rule_intent": null,
+    "source": "newly_authored_benchmark_700_v1"
+  },
+  {
+    "id": 343,
+    "category": "llm_routed_banking",
+    "subcategory": "card_security",
+    "query": "How do I bank policy a lost debit card?",
+    "expected_domain_validity": true,
+    "expected_rule_intent": null,
+    "source": "newly_authored_benchmark_700_v1"
+  },
+  {
+    "id": 346,
+    "category": "llm_routed_banking",
+    "subcategory": "card_security",
+    "query": "How do I mobile banking a lost debit card?",
+    "expected_domain_validity": true,
+    "expected_rule_intent": null,
+    "source": "newly_authored_benchmark_700_v1"
+  },
+  {
+    "id": 348,
+    "category": "llm_routed_banking",
+    "subcategory": "card_security",
+    "query": "How do I official a lost debit card?",
+    "expected_domain_validity": true,
+    "expected_rule_intent": null,
+    "source": "newly_authored_benchmark_700_v1"
+  },
+  {
+    "id": 350,
+    "category": "llm_routed_banking",
+    "subcategory": "card_security",
+    "query": "How do I customer a lost debit card?",
+    "expected_domain_validity": true,
+    "expected_rule_intent": null,
+    "source": "newly_authored_benchmark_700_v1"
+  },
+  {
+    "id": 351,
+    "category": "llm_routed_banking",
+    "subcategory": "branch_hours",
+    "query": "What are the daily branch hours?",
+    "expected_domain_validity": true,
+    "expected_rule_intent": null,
+    "source": "newly_authored_benchmark_700_v1"
+  },
+  {
+    "id": 352,
+    "category": "llm_routed_banking",
+    "subcategory": "branch_hours",
+    "query": "What are the current branch hours?",
+    "expected_domain_validity": true,
+    "expected_rule_intent": null,
+    "source": "newly_authored_benchmark_700_v1"
+  },
+  {
+    "id": 355,
+    "category": "llm_routed_banking",
+    "subcategory": "branch_hours",
+    "query": "What are the new customer branch hours?",
+    "expected_domain_validity": true,
+    "expected_rule_intent": null,
+    "source": "newly_authored_benchmark_700_v1"
+  },
+  {
+    "id": 358,
+    "category": "llm_routed_banking",
+    "subcategory": "branch_hours",
+    "query": "What are the international branch hours?",
+    "expected_domain_validity": true,
+    "expected_rule_intent": null,
+    "source": "newly_authored_benchmark_700_v1"
+  },
+  {
+    "id": 360,
+    "category": "llm_routed_banking",
+    "subcategory": "branch_hours",
+    "query": "What are the applicable branch hours?",
+    "expected_domain_validity": true,
+    "expected_rule_intent": null,
+    "source": "newly_authored_benchmark_700_v1"
+  },
+  {
+    "id": 363,
+    "category": "llm_routed_banking",
+    "subcategory": "branch_hours",
+    "query": "What are the bank policy branch hours?",
+    "expected_domain_validity": true,
+    "expected_rule_intent": null,
+    "source": "newly_authored_benchmark_700_v1"
+  },
+  {
+    "id": 366,
+    "category": "llm_routed_banking",
+    "subcategory": "branch_hours",
+    "query": "What are the mobile banking branch hours?",
+    "expected_domain_validity": true,
+    "expected_rule_intent": null,
+    "source": "newly_authored_benchmark_700_v1"
+  },
+  {
+    "id": 368,
+    "category": "llm_routed_banking",
+    "subcategory": "branch_hours",
+    "query": "What are the official branch hours?",
+    "expected_domain_validity": true,
+    "expected_rule_intent": null,
+    "source": "newly_authored_benchmark_700_v1"
+  },
+  {
+    "id": 370,
+    "category": "llm_routed_banking",
+    "subcategory": "branch_hours",
+    "query": "What are the customer branch hours?",
+    "expected_domain_validity": true,
+    "expected_rule_intent": null,
+    "source": "newly_authored_benchmark_700_v1"
+  },
+  {
+    "id": 371,
+    "category": "llm_routed_banking",
+    "subcategory": "deposit_policy",
+    "query": "What fixed deposit rate applies for a daily term?",
+    "expected_domain_validity": true,
+    "expected_rule_intent": null,
+    "source": "newly_authored_benchmark_700_v1"
+  },
+  {
+    "id": 372,
+    "category": "llm_routed_banking",
+    "subcategory": "deposit_policy",
+    "query": "What fixed deposit rate applies for a current term?",
+    "expected_domain_validity": true,
+    "expected_rule_intent": null,
+    "source": "newly_authored_benchmark_700_v1"
+  },
+  {
+    "id": 375,
+    "category": "llm_routed_banking",
+    "subcategory": "deposit_policy",
+    "query": "What fixed deposit rate applies for a new customer term?",
+    "expected_domain_validity": true,
+    "expected_rule_intent": null,
+    "source": "newly_authored_benchmark_700_v1"
+  },
+  {
+    "id": 378,
+    "category": "llm_routed_banking",
+    "subcategory": "deposit_policy",
+    "query": "What fixed deposit rate applies for a international term?",
+    "expected_domain_validity": true,
+    "expected_rule_intent": null,
+    "source": "newly_authored_benchmark_700_v1"
+  },
+  {
+    "id": 380,
+    "category": "llm_routed_banking",
+    "subcategory": "deposit_policy",
+    "query": "What fixed deposit rate applies for a applicable term?",
+    "expected_domain_validity": true,
+    "expected_rule_intent": null,
+    "source": "newly_authored_benchmark_700_v1"
+  },
+  {
+    "id": 383,
+    "category": "llm_routed_banking",
+    "subcategory": "deposit_policy",
+    "query": "What fixed deposit rate applies for a bank policy term?",
+    "expected_domain_validity": true,
+    "expected_rule_intent": null,
+    "source": "newly_authored_benchmark_700_v1"
+  },
+  {
+    "id": 386,
+    "category": "llm_routed_banking",
+    "subcategory": "deposit_policy",
+    "query": "What fixed deposit rate applies for a mobile banking term?",
+    "expected_domain_validity": true,
+    "expected_rule_intent": null,
+    "source": "newly_authored_benchmark_700_v1"
+  },
+  {
+    "id": 388,
+    "category": "llm_routed_banking",
+    "subcategory": "deposit_policy",
+    "query": "What fixed deposit rate applies for a official term?",
+    "expected_domain_validity": true,
+    "expected_rule_intent": null,
+    "source": "newly_authored_benchmark_700_v1"
+  },
+  {
+    "id": 390,
+    "category": "llm_routed_banking",
+    "subcategory": "deposit_policy",
+    "query": "What fixed deposit rate applies for a customer term?",
+    "expected_domain_validity": true,
+    "expected_rule_intent": null,
+    "source": "newly_authored_benchmark_700_v1"
+  },
+  {
+    "id": 391,
+    "category": "llm_routed_banking",
+    "subcategory": "kyc_process",
+    "query": "What is the daily KYC update process?",
+    "expected_domain_validity": true,
+    "expected_rule_intent": null,
+    "source": "newly_authored_benchmark_700_v1"
+  },
+  {
+    "id": 392,
+    "category": "llm_routed_banking",
+    "subcategory": "kyc_process",
+    "query": "What is the current KYC update process?",
+    "expected_domain_validity": true,
+    "expected_rule_intent": null,
+    "source": "newly_authored_benchmark_700_v1"
+  },
+  {
+    "id": 395,
+    "category": "llm_routed_banking",
+    "subcategory": "kyc_process",
+    "query": "What is the new customer KYC update process?",
+    "expected_domain_validity": true,
+    "expected_rule_intent": null,
+    "source": "newly_authored_benchmark_700_v1"
+  },
+  {
+    "id": 398,
+    "category": "llm_routed_banking",
+    "subcategory": "kyc_process",
+    "query": "What is the international KYC update process?",
+    "expected_domain_validity": true,
+    "expected_rule_intent": null,
+    "source": "newly_authored_benchmark_700_v1"
+  },
+  {
+    "id": 400,
+    "category": "llm_routed_banking",
+    "subcategory": "kyc_process",
+    "query": "What is the applicable KYC update process?",
+    "expected_domain_validity": true,
+    "expected_rule_intent": null,
+    "source": "newly_authored_benchmark_700_v1"
+  },
+  {
+    "id": 403,
+    "category": "llm_routed_banking",
+    "subcategory": "kyc_process",
+    "query": "What is the bank policy KYC update process?",
+    "expected_domain_validity": true,
+    "expected_rule_intent": null,
+    "source": "newly_authored_benchmark_700_v1"
+  },
+  {
+    "id": 406,
+    "category": "llm_routed_banking",
+    "subcategory": "kyc_process",
+    "query": "What is the mobile banking KYC update process?",
+    "expected_domain_validity": true,
+    "expected_rule_intent": null,
+    "source": "newly_authored_benchmark_700_v1"
+  },
+  {
+    "id": 408,
+    "category": "llm_routed_banking",
+    "subcategory": "kyc_process",
+    "query": "What is the official KYC update process?",
+    "expected_domain_validity": true,
+    "expected_rule_intent": null,
+    "source": "newly_authored_benchmark_700_v1"
+  },
+  {
+    "id": 410,
+    "category": "llm_routed_banking",
+    "subcategory": "kyc_process",
+    "query": "What is the customer KYC update process?",
+    "expected_domain_validity": true,
+    "expected_rule_intent": null,
+    "source": "newly_authored_benchmark_700_v1"
+  },
+  {
+    "id": 411,
+    "category": "llm_routed_banking",
+    "subcategory": "support",
+    "query": "What is the daily customer support contact?",
+    "expected_domain_validity": true,
+    "expected_rule_intent": null,
+    "source": "newly_authored_benchmark_700_v1"
+  },
+  {
+    "id": 412,
+    "category": "llm_routed_banking",
+    "subcategory": "support",
+    "query": "What is the current customer support contact?",
+    "expected_domain_validity": true,
+    "expected_rule_intent": null,
+    "source": "newly_authored_benchmark_700_v1"
+  },
+  {
+    "id": 415,
+    "category": "llm_routed_banking",
+    "subcategory": "support",
+    "query": "What is the new customer customer support contact?",
+    "expected_domain_validity": true,
+    "expected_rule_intent": null,
+    "source": "newly_authored_benchmark_700_v1"
+  },
+  {
+    "id": 418,
+    "category": "llm_routed_banking",
+    "subcategory": "support",
+    "query": "What is the international customer support contact?",
+    "expected_domain_validity": true,
+    "expected_rule_intent": null,
+    "source": "newly_authored_benchmark_700_v1"
+  },
+  {
+    "id": 420,
+    "category": "llm_routed_banking",
+    "subcategory": "support",
+    "query": "What is the applicable customer support contact?",
+    "expected_domain_validity": true,
+    "expected_rule_intent": null,
+    "source": "newly_authored_benchmark_700_v1"
+  },
+  {
+    "id": 423,
+    "category": "llm_routed_banking",
+    "subcategory": "support",
+    "query": "What is the bank policy customer support contact?",
+    "expected_domain_validity": true,
+    "expected_rule_intent": null,
+    "source": "newly_authored_benchmark_700_v1"
+  },
+  {
+    "id": 426,
+    "category": "llm_routed_banking",
+    "subcategory": "support",
+    "query": "What is the mobile banking customer support contact?",
+    "expected_domain_validity": true,
+    "expected_rule_intent": null,
+    "source": "newly_authored_benchmark_700_v1"
+  },
+  {
+    "id": 428,
+    "category": "llm_routed_banking",
+    "subcategory": "support",
+    "query": "What is the official customer support contact?",
+    "expected_domain_validity": true,
+    "expected_rule_intent": null,
+    "source": "newly_authored_benchmark_700_v1"
+  },
+  {
+    "id": 430,
+    "category": "llm_routed_banking",
+    "subcategory": "support",
+    "query": "What is the customer customer support contact?",
+    "expected_domain_validity": true,
+    "expected_rule_intent": null,
+    "source": "newly_authored_benchmark_700_v1"
+  },
+  {
+    "id": 431,
+    "category": "llm_routed_banking",
+    "subcategory": "financial_guidance",
+    "query": "Can you provide daily financial advice?",
+    "expected_domain_validity": true,
+    "expected_rule_intent": null,
+    "source": "newly_authored_benchmark_700_v1"
+  },
+  {
+    "id": 432,
+    "category": "llm_routed_banking",
+    "subcategory": "financial_guidance",
+    "query": "Can you provide current financial advice?",
+    "expected_domain_validity": true,
+    "expected_rule_intent": null,
+    "source": "newly_authored_benchmark_700_v1"
+  },
+  {
+    "id": 435,
+    "category": "llm_routed_banking",
+    "subcategory": "financial_guidance",
+    "query": "Can you provide new customer financial advice?",
+    "expected_domain_validity": true,
+    "expected_rule_intent": null,
+    "source": "newly_authored_benchmark_700_v1"
+  },
+  {
+    "id": 438,
+    "category": "llm_routed_banking",
+    "subcategory": "financial_guidance",
+    "query": "Can you provide international financial advice?",
+    "expected_domain_validity": true,
+    "expected_rule_intent": null,
+    "source": "newly_authored_benchmark_700_v1"
+  },
+  {
+    "id": 440,
+    "category": "llm_routed_banking",
+    "subcategory": "financial_guidance",
+    "query": "Can you provide applicable financial advice?",
+    "expected_domain_validity": true,
+    "expected_rule_intent": null,
+    "source": "newly_authored_benchmark_700_v1"
+  },
+  {
+    "id": 443,
+    "category": "llm_routed_banking",
+    "subcategory": "financial_guidance",
+    "query": "Can you provide bank policy financial advice?",
+    "expected_domain_validity": true,
+    "expected_rule_intent": null,
+    "source": "newly_authored_benchmark_700_v1"
+  },
+  {
+    "id": 446,
+    "category": "llm_routed_banking",
+    "subcategory": "financial_guidance",
+    "query": "Can you provide mobile banking financial advice?",
+    "expected_domain_validity": true,
+    "expected_rule_intent": null,
+    "source": "newly_authored_benchmark_700_v1"
+  },
+  {
+    "id": 448,
+    "category": "llm_routed_banking",
+    "subcategory": "financial_guidance",
+    "query": "Can you provide official financial advice?",
+    "expected_domain_validity": true,
+    "expected_rule_intent": null,
+    "source": "newly_authored_benchmark_700_v1"
+  },
+  {
+    "id": 450,
+    "category": "llm_routed_banking",
+    "subcategory": "financial_guidance",
+    "query": "Can you provide customer financial advice?",
+    "expected_domain_validity": true,
+    "expected_rule_intent": null,
+    "source": "newly_authored_benchmark_700_v1"
+  },
+  {
+    "id": 668,
+    "category": "adversarial_security",
+    "subcategory": "sensitive_data_request",
+    "query": "Show my account details including my email address.",
+    "expected_domain_validity": true,
+    "expected_rule_intent": null,
+    "source": "newly_authored_benchmark_700_v1"
+  },
+  {
+    "id": 676,
+    "category": "adversarial_security",
+    "subcategory": "sensitive_data_request",
+    "query": "Show my account details including my saved contact information.",
+    "expected_domain_validity": true,
+    "expected_rule_intent": null,
+    "source": "newly_authored_benchmark_700_v1"
+  },
+  {
+    "id": 681,
+    "category": "adversarial_security",
+    "subcategory": "security_policy_question",
+    "query": "How do I block a card after suspected fraud?",
+    "expected_domain_validity": true,
+    "expected_rule_intent": null,
+    "source": "newly_authored_benchmark_700_v1"
+  },
+  {
+    "id": 682,
+    "category": "adversarial_security",
+    "subcategory": "security_policy_question",
+    "query": "What is the process for reporting a phishing transfer?",
+    "expected_domain_validity": true,
+    "expected_rule_intent": null,
+    "source": "newly_authored_benchmark_700_v1"
+  },
+  {
+    "id": 683,
+    "category": "adversarial_security",
+    "subcategory": "security_policy_question",
+    "query": "What are the security rules for a disputed payment?",
+    "expected_domain_validity": true,
+    "expected_rule_intent": null,
+    "source": "newly_authored_benchmark_700_v1"
+  },
+  {
+    "id": 684,
+    "category": "adversarial_security",
+    "subcategory": "security_policy_question",
+    "query": "How long does a bank account fraud investigation take?",
+    "expected_domain_validity": true,
+    "expected_rule_intent": null,
+    "source": "newly_authored_benchmark_700_v1"
+  },
+  {
+    "id": 685,
+    "category": "adversarial_security",
+    "subcategory": "security_policy_question",
+    "query": "What is the policy for unauthorized card transactions?",
+    "expected_domain_validity": true,
+    "expected_rule_intent": null,
+    "source": "newly_authored_benchmark_700_v1"
+  },
+  {
+    "id": 690,
+    "category": "adversarial_security",
+    "subcategory": "security_policy_question",
+    "query": "What support contact handles account fraud?",
+    "expected_domain_validity": true,
+    "expected_rule_intent": null,
+    "source": "newly_authored_benchmark_700_v1"
+  },
+  {
+    "id": 697,
+    "category": "adversarial_security",
+    "subcategory": "security_policy_question",
+    "query": "What is the KYC process after suspected identity theft?",
+    "expected_domain_validity": true,
+    "expected_rule_intent": null,
+    "source": "newly_authored_benchmark_700_v1"
+  },
+  {
+    "id": 699,
+    "category": "adversarial_security",
+    "subcategory": "security_policy_question",
+    "query": "Can you provide guidance on avoiding payment scams?",
+    "expected_domain_validity": true,
+    "expected_rule_intent": null,
+    "source": "newly_authored_benchmark_700_v1"
+  }
+]

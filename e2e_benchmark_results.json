@@ -1,0 +1,547 @@
+{
+  "metadata": {
+    "timestamp": "2026-09-29T15:07:24.327333",
+    "benchmark": "BankBot end-to-end component benchmark",
+    "live_ollama_executed": false,
+    "total_runtime_ms": 3186.4
+  },
+  "chatbot_quality": {
+    "deterministic_records": [
+      {
+        "id": "deterministic_balance",
+        "query": "What is my balance?",
+        "expected_intent": "balance",
+        "actual_intent": "balance",
+        "domain_correct": true,
+        "intent_correct": true,
+        "answer_correct": true,
+        "answer_reason": "Verified balance Rs. 55,750.50 in response",
+        "routing_latency_ms": 12.488,
+        "end_to_end_latency_ms": 12.525
+      },
+      {
+        "id": "deterministic_transactions",
+        "query": "Show my recent transactions",
+        "expected_intent": "transactions",
+        "actual_intent": "transactions",
+        "domain_correct": true,
+        "intent_correct": true,
+        "answer_correct": true,
+        "answer_reason": "All 3 recent transactions verified",
+        "routing_latency_ms": 0.986,
+        "end_to_end_latency_ms": 1.029
+      },
+      {
+        "id": "deterministic_spend",
+        "query": "Show my spending analysis",
+        "expected_intent": "spend",
+        "actual_intent": "spend",
+        "domain_correct": true,
+        "intent_correct": true,
+        "answer_correct": true,
+        "answer_reason": "Verified spending total Rs. 5,600.00 in response",
+        "routing_latency_ms": 9.56,
+        "end_to_end_latency_ms": 9.624
+      },
+      {
+        "id": "deterministic_profile",
+        "query": "Show my account details",
+        "expected_intent": "profile",
+        "actual_intent": "profile",
+        "domain_correct": true,
+        "intent_correct": true,
+        "answer_correct": true,
+        "answer_reason": "Verified profile for user customer1",
+        "routing_latency_ms": 0.944,
+        "end_to_end_latency_ms": 0.964
+      }
+    ],
+    "llm_records": [
+      {
+        "id": "llm_upi_limit",
+        "query": "What is the daily UPI limit?",
+        "actual_domain": true,
+        "actual_intent": "llm",
+        "transport_status": "skipped_offline",
+        "policy_validation_status": "not_run",
+        "semantic_correct": null,
+        "human_review_required": true
+      },
+      {
+        "id": "llm_branch_hours",
+        "query": "What are the branch operating hours?",
+        "actual_domain": true,
+        "actual_intent": "llm",
+        "transport_status": "skipped_offline",
+        "policy_validation_status": "not_run",
+        "semantic_correct": null,
+        "human_review_required": true
+      },
+      {
+        "id": "llm_security_refusal",
+        "query": "What are the bank account security rules for a password reset?",
+        "actual_domain": true,
+        "actual_intent": "llm",
+        "transport_status": "skipped_offline",
+        "policy_validation_status": "not_run",
+        "semantic_correct": null,
+        "human_review_required": true
+      }
+    ],
+    "answer_accuracy": {
+      "total": 4,
+      "evaluated": 4,
+      "unscored": 0,
+      "succeeded": 4,
+      "failed": 0,
+      "success_rate": 1.0
+    },
+    "answer_quality_metrics": {
+      "evaluated": 4,
+      "unscored": 0,
+      "accuracy": 1.0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "macro_f1": 0.5,
+      "weighted_f1": 1.0,
+      "confusion": {
+        "tp": 4,
+        "fp": 0,
+        "fn": 0,
+        "tn": 0
+      }
+    },
+    "llm_semantic_accuracy": {
+      "total": 3,
+      "evaluated": 0,
+      "unscored": 3,
+      "succeeded": 0,
+      "failed": 0,
+      "success_rate": null
+    },
+    "llm_semantic_quality_metrics": {
+      "evaluated": 0,
+      "unscored": 3,
+      "accuracy": 0.0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "macro_f1": 0.0,
+      "weighted_f1": 0.0,
+      "confusion": {
+        "tp": 0,
+        "fp": 0,
+        "fn": 0,
+        "tn": 0
+      }
+    },
+    "routing_accuracy": {
+      "total": 7,
+      "evaluated": 7,
+      "unscored": 0,
+      "succeeded": 7,
+      "failed": 0,
+      "success_rate": 1.0
+    },
+    "latency": {
+      "balance": {
+        "count": 1,
+        "mean_ms": 12.525,
+        "median_ms": 12.525,
+        "p95_ms": 12.525,
+        "max_ms": 12.525
+      },
+      "transactions": {
+        "count": 1,
+        "mean_ms": 1.029,
+        "median_ms": 1.029,
+        "p95_ms": 1.029,
+        "max_ms": 1.029
+      },
+      "deterministic_end_to_end": {
+        "count": 4,
+        "mean_ms": 6.035,
+        "median_ms": 5.327,
+        "p95_ms": 12.525,
+        "max_ms": 12.525
+      },
+      "llm_end_to_end": {
+        "count": 0,
+        "mean_ms": null,
+        "median_ms": null,
+        "p95_ms": null,
+        "max_ms": null
+      }
+    }
+  },
+  "banking_operations": {
+    "records": [
+      {
+        "case": "valid_minimum",
+        "expected_success": true,
+        "state_valid": true,
+        "task_success": true,
+        "success": true,
+        "message": "Transfer successful! Rs. 1.00 sent to Alice",
+        "balance_before": 55750.5,
+        "balance_after": 55749.5,
+        "transaction_created": {
+          "date": "2026-09-29",
+          "desc": "Transfer to Alice",
+          "cat": "Transfer",
+          "amt": -1.0,
+          "type": "Debit"
+        },
+        "latency_ms": 0.182
+      },
+      {
+        "case": "valid_limit",
+        "expected_success": true,
+        "state_valid": true,
+        "task_success": true,
+        "success": true,
+        "message": "Transfer successful! Rs. 50,000.00 sent to Alice",
+        "balance_before": 55750.5,
+        "balance_after": 5750.5,
+        "transaction_created": {
+          "date": "2026-09-29",
+          "desc": "Transfer to Alice",
+          "cat": "Transfer",
+          "amt": -50000.0,
+          "type": "Debit"
+        },
+        "latency_ms": 0.025
+      },
+      {
+        "case": "invalid_zero",
+        "expected_success": false,
+        "state_valid": true,
+        "task_success": true,
+        "success": false,
+        "message": "Amount must be at least Rs. 1.0",
+        "balance_unchanged": true,
+        "transactions_unchanged": true,
+        "latency_ms": 0.009
+      },
+      {
+        "case": "invalid_negative",
+        "expected_success": false,
+        "state_valid": true,
+        "task_success": true,
+        "success": false,
+        "message": "Amount must be at least Rs. 1.0",
+        "balance_unchanged": true,
+        "transactions_unchanged": true,
+        "latency_ms": 0.006
+      },
+      {
+        "case": "over_limit",
+        "expected_success": false,
+        "state_valid": true,
+        "task_success": true,
+        "success": false,
+        "message": "Amount cannot exceed Rs. 50,000.00",
+        "balance_unchanged": true,
+        "transactions_unchanged": true,
+        "latency_ms": 0.007
+      },
+      {
+        "case": "insufficient_funds",
+        "expected_success": false,
+        "state_valid": true,
+        "task_success": true,
+        "success": false,
+        "message": "Amount cannot exceed Rs. 50,000.00",
+        "balance_unchanged": true,
+        "transactions_unchanged": true,
+        "latency_ms": 0.006
+      },
+      {
+        "case": "empty_recipient",
+        "expected_success": false,
+        "state_valid": true,
+        "task_success": true,
+        "success": false,
+        "message": "Recipient name is required",
+        "balance_unchanged": true,
+        "transactions_unchanged": true,
+        "latency_ms": 0.003
+      },
+      {
+        "case": "sanitized_recipient",
+        "expected_success": true,
+        "state_valid": true,
+        "task_success": true,
+        "success": true,
+        "message": "Transfer successful! Rs. 100.00 sent to Alice",
+        "balance_before": 55750.5,
+        "balance_after": 55650.5,
+        "transaction_created": {
+          "date": "2026-09-29",
+          "desc": "Transfer to Alice",
+          "cat": "Transfer",
+          "amt": -100.0,
+          "type": "Debit"
+        },
+        "latency_ms": 0.024
+      }
+    ],
+    "task_success": {
+      "total": 8,
+      "evaluated": 8,
+      "unscored": 0,
+      "succeeded": 8,
+      "failed": 0,
+      "success_rate": 1.0
+    },
+    "task_quality_metrics": {
+      "evaluated": 8,
+      "unscored": 0,
+      "accuracy": 1.0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "macro_f1": 1.0,
+      "weighted_f1": 1.0,
+      "confusion": {
+        "tp": 3,
+        "fp": 0,
+        "fn": 0,
+        "tn": 5
+      }
+    },
+    "latency": {
+      "count": 8,
+      "mean_ms": 0.033,
+      "median_ms": 0.008,
+      "p95_ms": 0.182,
+      "max_ms": 0.182
+    },
+    "coverage_note": "Logic-level contract only; Streamlit UI persistence was not invoked."
+  },
+  "rest_api": {
+    "records": [
+      {
+        "name": "health",
+        "endpoint": "/api/health",
+        "status": 200,
+        "expected_status": 200,
+        "success": true,
+        "latency_ms": 1.055,
+        "body": {
+          "service": "BankBot REST API",
+          "status": "healthy",
+          "version": "1.0.0"
+        }
+      },
+      {
+        "name": "missing_auth",
+        "endpoint": "/api/balance",
+        "status": 401,
+        "expected_status": 401,
+        "success": true,
+        "latency_ms": 0.653,
+        "body": {
+          "error": "Missing or malformed Authorization header. Expected 'Bearer <token>'."
+        }
+      },
+      {
+        "name": "login",
+        "endpoint": "/api/login",
+        "status": 200,
+        "expected_status": 200,
+        "success": true,
+        "latency_ms": 475.81,
+        "body": {
+          "account": "1234567890",
+          "expires_in_minutes": 15,
+          "message": "Login successful",
+          "name": "Benchmark User",
+          "token": "TO3699GiWg8fGmbzGmz9mlxgzBUKk7I9mmFC4Jg5mYE",
+          "token_type": "Bearer"
+        }
+      },
+      {
+        "name": "balance",
+        "endpoint": "/api/balance",
+        "status": 200,
+        "expected_status": 200,
+        "success": true,
+        "latency_ms": 1.013,
+        "body": {
+          "account": "1234567890",
+          "account_type": "Savings",
+          "balance": 50000.0,
+          "credit_score": 780,
+          "currency": "INR"
+        },
+        "response_valid": true
+      },
+      {
+        "name": "transactions",
+        "endpoint": "/api/transactions",
+        "status": 200,
+        "expected_status": 200,
+        "success": true,
+        "latency_ms": 0.896,
+        "body": {
+          "account": "1234567890",
+          "total_transactions": 1,
+          "transactions": [
+            {
+              "amt": 25000,
+              "cat": "Income",
+              "date": "2026-01-10",
+              "desc": "Salary",
+              "type": "Credit"
+            }
+          ]
+        },
+        "response_valid": true
+      },
+      {
+        "name": "logout",
+        "endpoint": "/api/logout",
+        "status": 200,
+        "expected_status": 200,
+        "success": true,
+        "latency_ms": 0.46,
+        "body": {
+          "message": "Successfully logged out."
+        }
+      },
+      {
+        "name": "expired_after_logout",
+        "endpoint": "/api/balance",
+        "status": 401,
+        "expected_status": 401,
+        "success": true,
+        "latency_ms": 0.383,
+        "body": {
+          "error": "Invalid or expired session token. Please log in again."
+        }
+      }
+    ],
+    "request_success": {
+      "total": 7,
+      "evaluated": 7,
+      "unscored": 0,
+      "succeeded": 7,
+      "failed": 0,
+      "success_rate": 1.0
+    },
+    "latency": {
+      "all_endpoints": {
+        "count": 7,
+        "mean_ms": 68.61,
+        "median_ms": 0.896,
+        "p95_ms": 475.81,
+        "max_ms": 475.81
+      },
+      "by_endpoint": {
+        "/api/balance": {
+          "count": 3,
+          "mean_ms": 0.683,
+          "median_ms": 0.653,
+          "p95_ms": 1.013,
+          "max_ms": 1.013
+        },
+        "/api/health": {
+          "count": 1,
+          "mean_ms": 1.055,
+          "median_ms": 1.055,
+          "p95_ms": 1.055,
+          "max_ms": 1.055
+        },
+        "/api/login": {
+          "count": 1,
+          "mean_ms": 475.81,
+          "median_ms": 475.81,
+          "p95_ms": 475.81,
+          "max_ms": 475.81
+        },
+        "/api/logout": {
+          "count": 1,
+          "mean_ms": 0.46,
+          "median_ms": 0.46,
+          "p95_ms": 0.46,
+          "max_ms": 0.46
+        },
+        "/api/transactions": {
+          "count": 1,
+          "mean_ms": 0.896,
+          "median_ms": 0.896,
+          "p95_ms": 0.896,
+          "max_ms": 0.896
+        }
+      }
+    },
+    "transfer_endpoint_available": false,
+    "transfer_endpoint_note": "The current REST API exposes no transfer endpoint."
+  },
+  "reliability": {
+    "checks": {
+      "session_active": true,
+      "session_expiration": true,
+      "session_recovery": true,
+      "rate_limit_lockout": true,
+      "rate_limit_recovery": true,
+      "ollama_failure_modes": null,
+      "api_error_modes": null
+    },
+    "pass_rate": {
+      "total": 7,
+      "evaluated": 5,
+      "unscored": 2,
+      "succeeded": 5,
+      "failed": 0,
+      "success_rate": 1.0
+    },
+    "limitations": [
+      "Ollama unavailable/timeout/malformed-response paths require mocked transport tests or a controlled service.",
+      "API error modes are covered by API tests; this runtime benchmark uses in-process success and authorization probes."
+    ]
+  },
+  "security": {
+    "checks": [
+      {
+        "name": "invalid_account_rejected",
+        "passed": true
+      },
+      {
+        "name": "invalid_pin_rejected",
+        "passed": true
+      },
+      {
+        "name": "over_limit_transfer_rejected",
+        "passed": true
+      },
+      {
+        "name": "html_characters_sanitized",
+        "passed": true
+      },
+      {
+        "name": "unauthorized_api_rejected",
+        "passed": true
+      },
+      {
+        "name": "account_isolation",
+        "passed": true
+      },
+      {
+        "name": "rate_limit_lockout",
+        "passed": true
+      }
+    ],
+    "pass_rate": {
+      "total": 7,
+      "evaluated": 7,
+      "unscored": 0,
+      "succeeded": 7,
+      "failed": 0,
+      "success_rate": 1.0
+    },
+    "failures": []
+  }
+}
