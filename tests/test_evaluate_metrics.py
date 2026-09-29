@@ -638,6 +638,15 @@ class TestAnswerCorrectness(unittest.TestCase):
         is_correct, reason = verify_answer_correctness("transactions", empty_resp, self.user)
         self.assertFalse(is_correct)
 
+    def test_malformed_transaction_filter_is_unscored_not_factually_correct(self):
+        item = {
+            "id": "bad-date", "query": "Show transactions from 2024-13-01 to tomorrow",
+            "expected_domain_validity": True, "expected_rule_intent": "transactions",
+        }
+        result = evaluate_query(item)
+        self.assertIsNone(result["answer_correct"])
+        self.assertIsNone(result["factuality_pass"])
+
     def test_spend_answer_verified(self):
         resp = generate_deterministic_answer("spend", self.user)
         self.assertIsNotNone(resp)

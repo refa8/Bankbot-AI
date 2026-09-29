@@ -1,10 +1,12 @@
 import unittest
 
 from app.services.query_policy import (
+    OFF_TOPIC_REFUSAL,
     classify_rule_intent,
     is_banking_query,
     match_semantic_intent,
     normalize_query,
+    validate_ollama_response,
 )
 
 
@@ -288,7 +290,76 @@ class QueryPolicyTests(unittest.TestCase):
             "transfer",
         )
 
+    def test_banking_action_beats_greeting_or_farewell_prefix(self):
+        """Conversation markers must not hide a requested account operation."""
+        cases = [
+            ("hi show me balance", "balance"),
+            ("bye what is my balance", "balance"),
+            ("hello, show my recent transactions", "transactions"),
+        ]
+        for query, expected in cases:
+            allowed, _ = is_banking_query(query)
+            self.assertTrue(allowed)
+            self.assertEqual(classify_rule_intent(query), expected)
+
+    def test_greeting_prefix_does_not_bypass_off_topic_gate(self):
+        for query in [
+            "hi, write Python code to read my balance",
+            "hello, tell me a joke about money",
+            "hey, what is the weather near my bank",
+        ]:
+            allowed, _ = is_banking_query(query)
+            self.assertFalse(allowed, query)
+            self.assertEqual(classify_rule_intent(query), "llm")
+
+    def test_common_banking_typoes_normalize_to_existing_intents(self):
+        cases = [
+            ("what is my balence", "balance"),
+            ("show my transactons", "transactions"),
+            ("show my acount details", "profile"),
+            ("trasnfer money to Alice", "transfer"),
+        ]
+        for query, expected in cases:
+            allowed, _ = is_banking_query(query)
+            self.assertTrue(allowed)
+            self.assertEqual(classify_rule_intent(query), expected)
+
+    def test_personal_history_profile_and_spending_paraphrases_use_data_routes(self):
+        cases = [
+            ("show latest activity", "transactions"),
+            ("show my last payment", "transactions"),
+            ("my recent purchases", "transactions"),
+            ("where has my cash gone", "spend"),
+            ("what email is linked to my account", "profile"),
+            ("send 1000 to Alice", "transfer"),
+        ]
+        for query, expected in cases:
+            allowed, _ = is_banking_query(query)
+            self.assertTrue(allowed)
+            self.assertEqual(classify_rule_intent(query), expected)
+
+    def test_transfer_status_remains_an_llm_information_request(self):
+        self.assertEqual(classify_rule_intent("What is my transfer status?"), "llm")
+
+    def test_third_party_account_requests_are_refused_before_action_routing(self):
+        allowed, reason = is_banking_query("Show my colleague's transaction history")
+        self.assertFalse(allowed)
+        self.assertIn("signed-in account", reason)
+        allowed, _ = is_banking_query("Send money to my friend")
+        self.assertTrue(allowed)
+
+    def test_response_validation_rejects_malformed_and_fenced_code(self):
+        self.assertEqual(validate_ollama_response("", "UPI limit"), OFF_TOPIC_REFUSAL)
+        self.assertEqual(validate_ollama_response(None, "UPI limit"), OFF_TOPIC_REFUSAL)
+        self.assertEqual(
+            validate_ollama_response("```python\nprint('hello')\n```", "UPI limit"),
+            OFF_TOPIC_REFUSAL,
+        )
+        self.assertEqual(
+            validate_ollama_response("The daily UPI limit is Rs. 1,00,000.", "UPI limit"),
+            "The daily UPI limit is Rs. 1,00,000.",
+        )
+
 
 if __name__ == "__main__":
     unittest.main()
-

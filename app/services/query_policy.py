@@ -37,6 +37,21 @@ def normalize_query(prompt: str) -> str:
     for pat, repl in contractions.items():
         text = re.sub(pat, repl, text)
 
+    # Conservative corrections for high-frequency banking nouns. These are
+    # normalization fixes, not new routing keywords, so misspellings still
+    # follow the same policy and intent rules as their canonical forms.
+    corrections = {
+        r"\bbalence\b": "balance",
+        r"\btransacton(?:s)?\b": "transaction",
+        r"\btransection(?:s)?\b": "transaction",
+        r"\btranscation(?:s)?\b": "transaction",
+        r"\bacount\b": "account",
+        r"\bprofil\b": "profile",
+        r"\btrasnfer\b": "transfer",
+    }
+    for pat, repl in corrections.items():
+        text = re.sub(pat, repl, text)
+
     # Compress 3+ repeated characters down to 1 (e.g. heyyy -> hey, pleaaase -> please)
     text = re.sub(r'([a-zA-Z])\1{2,}', r'\1', text)
 
@@ -97,7 +112,7 @@ BANKING_KEYWORDS = {
     'financial': [
         'spend', 'spent', 'spending', 'expense', 'expenses', 'expenditure',
         'income', 'budget', 'budgeting', 'investment', 'investments',
-        'portfolio', 'finances', 'financial'
+        'portfolio', 'finances', 'financial', 'financially'
     ]
 }
 
@@ -108,6 +123,7 @@ BANKING_PHRASES = (
     'payment history',
     'recent transactions',
     'recent activity',
+    'latest activity',
     'last transaction',
     'last transactions',
     'account details',
@@ -141,6 +157,7 @@ BANKING_ONLY_REFUSAL = (
     "I can only assist with banking-related questions about your account, "
     "transactions, transfers, loans, and other financial services."
 )
+ACCOUNT_ACCESS_REFUSAL = "For privacy, I can only show information for your signed-in account."
 
 PERSONAL_HISTORY_PATTERN = re.compile(
     r'\b(?:show|view|check|see|get|display|my)\s+(?:recent\s+)?(?:account\s+|transaction\s+|credit\s+|payment\s+)?history\b|'
@@ -169,6 +186,18 @@ THIRD_PARTY_WEALTH_PATTERN = re.compile(
     r'\b(?:salary|net\s*worth|wealth)\s+of\b|'
     r'\bwhat\s+is\s+(?!my\b)[a-z\s]+\b(?:salary|net\s*worth|wealth)\b',
     re.IGNORECASE
+)
+
+THIRD_PARTY_ACCOUNT_DATA_PATTERN = re.compile(
+    r'\b(?:show|view|display|tell|give|check|see|get)\b.*'
+    r'\b(?:my\s+)?(?:colleague|friend|spouse|partner|parent)(?:\s+s)?\s+'
+    r'(?:account|balance|transactions?|history|statement|profile|credit\s+score)\b|'
+    r'\b(?:show|view|display|tell|give|check|see|get)\b.*'
+    r'\b(?:another|different)\s+customer(?:\s+s)?\s+'
+    r'(?:account|balance|transactions?|history|statement|profile|credit\s+score)\b|'
+    r'\b(?:show|view|display|tell|give|check|see|get)\b.*'
+    r'\bsomeone\s+else(?:\s+s)?\s+(?:account|balance|transactions?|history|statement|profile|credit\s+score)\b',
+    re.IGNORECASE,
 )
 
 
@@ -394,14 +423,20 @@ def is_banking_query(prompt: str) -> tuple[bool, str]:
     """
     prompt_norm = normalize_query(prompt)
 
-    if is_small_talk(prompt_norm):
-        return True, "conversation"
+    # A signed-in user must never receive deterministic data in response to a
+    # request for another person's account. This is an authorization refusal,
+    # not an invitation to send confidential context to the LLM.
+    if THIRD_PARTY_ACCOUNT_DATA_PATTERN.search(prompt_norm):
+        return False, ACCOUNT_ACCESS_REFUSAL
 
-    # Precedence: check strong off-topic signals BEFORE general banking keyword match
-    # to prevent off-topic queries (e.g. "joke about money", "python banking script",
-    # "weather near bank branch", "django database transactions") from leaking through.
+    # Precedence: check strong off-topic signals before conversation or banking
+    # matching. A greeting prefix must not turn "hi, write Python code" into an
+    # allowed small-talk request.
     if has_strong_off_topic_signals(prompt_norm):
         return False, OFF_TOPIC_REFUSAL
+
+    if is_small_talk(prompt_norm):
+        return True, "conversation"
 
     if any(phrase in prompt_norm for phrase in BANKING_PHRASES):
         return True, "valid banking query"
@@ -431,26 +466,29 @@ _BALANCE_PATTERN = re.compile(
 _TRANSACTIONS_PATTERN = re.compile(
     r'\btransactions?\b|(?:transaction|account|payment)\s+history|recent(?:ly)?\s+(?:transactions?|activity)|last transactions?|'
     r'show (?:my\s+)?(?:account\s+)?history|\bmy\s+(?:account\s+)?history\b|what happened recently|\bstatements?\b|'
+    r'latest\s+(?:account\s+)?activity|my\s+last\s+payment|my\s+recent\s+purchases|'
     r'\b(?:buy|bought)\b.*\b(?:yesterday|today|last|recent|this)\b|'
     r'\bswiped\b|\bdebits?\s+and\s+credits?\b',
     re.IGNORECASE
 )
 _SPEND_PATTERN = re.compile(
     r'\bspend|\bspent\b|\bexpenses?\b|\bexpenditure\b|\bspending\b|\banalytics\b|'
-    r'how much did i (?:spend|pay)|where did (?:all\s+)?my money go',
+    r'how much did i (?:spend|pay)|where did (?:all\s+)?my money go|where has my cash gone',
     re.IGNORECASE
 )
 _PROFILE_PATTERN = re.compile(
     r'\bprofile\b|account (?:details|info|information|number|summary)|'
     r'my (?:details|account details|credit score|account number)|'
     r'tell me about my account|\bcredit score\b|'
-    r'\baccount\s+registered\s+to\b|\bregistered\s+to\b',
+    r'\baccount\s+registered\s+to\b|\bregistered\s+to\b|'
+    r'\bmy\s+(?:phone|email)\b|(?:phone|email)(?:\s+is)?\s+(?:linked|registered)\s+to\s+my\s+account',
     re.IGNORECASE
 )
 _TRANSFER_PATTERN = re.compile(
     r'\btransfer\b|send money|how (?:do i|to|can i) (?:send|pay|transfer)|'
     r'want to transfer|pay someone|send funds|'
-    r'\bwire\b.+\bto\b',
+    r'\bwire\b.+\bto\b|'
+    r'\b(?:send|pay)\s+(?:rs\.?\s*)?\d[\d,]*(?:\.\d+)?\s+(?:to\s+)?[a-z]',
     re.IGNORECASE
 )
 
@@ -459,25 +497,13 @@ def classify_rule_intent(prompt: str) -> str:
     """Classify queries that can be answered without calling the LLM."""
     prompt_norm = normalize_query(prompt)
 
-    # 1. Conversational exits
-    if re.search(r'\b(bye|goodbye|cya|peace\s+out)\b', prompt_norm):
-        return "goodbye"
-
-    # 2. Conversational help / identity
-    if re.search(r'^(please\s+)?(help|what can you|what do you do|who are you)\b', prompt_norm):
-        return "help"
-    if "help" in prompt_norm and not _has_any_word(prompt_norm, ['transfer', 'balance', 'statement', 'account', 'pay']):
-        return "help"
-
-    # 3. Conversational greeting
-    if is_small_talk(prompt):
-        return "greeting"
-
-    # 4. Off-topic guard: if query contains strong off-topic signals, it must never trigger an action
+    # 1. Off-topic guard: it must never trigger an action.
     if has_strong_off_topic_signals(prompt_norm):
         return "llm"
 
-    # 5. Informational / Policy Guard: inquiries must fall through to the LLM
+    # 2. Informational / Policy Guard: inquiries must fall through to the LLM.
+    # This comes before action matching so a transfer-status question does not
+    # receive the action guide and a greeting prefix cannot bypass policy routing.
     llm_policy_patterns = [
         # Duration / timing / clearing / processing inquiries
         r'\bhow\s+long\b',
@@ -497,18 +523,21 @@ def classify_rule_intent(prompt: str) -> str:
         r'\b(?:loan|loans|emi|mortgage)\b',
         r'\b(?:enable|disable|activate|block|lost|reward|rewards|points)\b',
         r'\bcredit\s+card\b|\bdebit\s+card\b',
-        r'\b(?:branch\s+hours|open\s+on|opening\s+hours|hours|closed|contact|support|email|ifsc|cheque\s+book)\b',
+        r'\b(?:branch\s+hours|open\s+on|opening\s+hours|hours|closed|contact|support|ifsc|cheque\s+book)\b',
         r'\bfixed\s+deposit|\brecurring\s+deposit|\bfd\b|\brd\b|\bdeposit\s+rate',
         r'\bmutual\s+funds?|\bfinancial\s+advice|\badvice\b|\bguidance\b|\binvestment\s+advice\b',
         r'\batm\b',
         r'\bkyc\b',
         r'\bhow\s+often\b|\bwhen\s+is\b|\bcan\s+you\s+explain\b',
         r'\b(?:grievance|complaint|complaints|redressal|escalation)\b',
+        r'\b(?:transfer|payment)\s+status\b',
     ]
     if any(re.search(pat, prompt_norm) for pat in llm_policy_patterns):
         return "llm"
 
-    # 6. Compound / Multi-Intent Detection across deterministic actions
+    # 3. Deterministic actions take precedence over conversational prefixes.
+    # "Hi, show my balance" and "bye, show transactions" are account requests,
+    # not greetings/farewells.
     # Instead of letting the first matching regex silently win, identify all candidate actions.
     matched_actions = []
 
@@ -535,7 +564,17 @@ def classify_rule_intent(prompt: str) -> str:
     if len(matched_actions) == 1:
         return matched_actions[0]
 
-    # 7. Semantic Fallback: run only when rules cannot confidently identify a single intent
+    # 4. Conversational exits and help apply only when no banking action matched.
+    if re.search(r'\b(bye|goodbye|cya|peace\s+out)\b', prompt_norm):
+        return "goodbye"
+    if re.search(r'^(please\s+)?(help|what can you|what do you do|who are you)\b', prompt_norm):
+        return "help"
+    if "help" in prompt_norm and not _has_any_word(prompt_norm, ['transfer', 'balance', 'statement', 'account', 'pay']):
+        return "help"
+    if is_small_talk(prompt):
+        return "greeting"
+
+    # 5. Semantic Fallback: run only when rules cannot confidently identify a single intent.
     sem_intent, score, margin = match_semantic_intent(prompt_norm, threshold=0.55, margin=0.08)
     if sem_intent:
         return sem_intent
@@ -548,7 +587,13 @@ def validate_ollama_response(response: str, original_query: str) -> str:
     Post-validation: Check if Ollama's response stayed on-topic.
     Returns: cleaned response or refusal message
     """
-    response_lower = response.lower()
+    # A caller should normally receive a non-empty string from the streaming
+    # layer. Keep this guard defensive so a malformed integration response is
+    # rejected rather than producing an exception or being displayed.
+    if not isinstance(response, str) or not response.strip():
+        return OFF_TOPIC_REFUSAL
+
+    response_lower = response.casefold()
 
     off_topic_indicators = [
         'here is a python script',
@@ -563,6 +608,12 @@ def validate_ollama_response(response: str, original_query: str) -> str:
     ]
 
     if any(indicator in response_lower for indicator in off_topic_indicators):
+        return OFF_TOPIC_REFUSAL
+
+    # Do not display fenced programming/database payloads merely because they
+    # omit one of the literal phrases above. Ordinary banking Markdown without
+    # a fenced block remains allowed.
+    if "```" in response_lower and re.search(r'```\s*(?:python|javascript|sql|bash|sh|html|css)\b', response_lower):
         return OFF_TOPIC_REFUSAL
 
     banking_terms = ['account', 'balance', 'transaction', 'transfer', 'bank', 'credit', 'debit', 'loan', 'deposit']

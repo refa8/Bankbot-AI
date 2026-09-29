@@ -1,10 +1,9 @@
 # security.py
 import bcrypt
+import math
 import secrets
 from datetime import datetime, timedelta
-from typing import Optional, Dict, Tuple
-from collections import defaultdict
-import streamlit as st
+from typing import Optional, Dict
 
 class PasswordHasher:
     """Handle password hashing and verification"""
@@ -42,19 +41,24 @@ class SessionManager:
     
     def is_session_valid(self, session: Dict) -> bool:
         """Check if session is still valid"""
-        if not session:
+        if not isinstance(session, dict):
             return False
         
         last_activity = session.get('last_activity')
-        if not last_activity:
+        if not isinstance(last_activity, datetime):
             return False
-        
-        elapsed = datetime.now() - last_activity
+
+        now = datetime.now()
+        # A future activity timestamp must not extend a session indefinitely.
+        if last_activity > now:
+            return False
+
+        elapsed = now - last_activity
         return elapsed < timedelta(minutes=self.timeout_minutes)
     
     def update_activity(self, session: Dict) -> Dict:
         """Update last activity time"""
-        if session:
+        if isinstance(session, dict):
             session['last_activity'] = datetime.now()
         return session
 
@@ -115,6 +119,8 @@ class InputValidator:
     @staticmethod
     def validate_account_number(account: str) -> Optional[str]:
         """Validate account number format"""
+        if not isinstance(account, str):
+            return "Account number must be a string"
         if not account:
             return "Account number is required"
         
@@ -131,6 +137,8 @@ class InputValidator:
     @staticmethod
     def validate_pin(pin: str) -> Optional[str]:
         """Validate PIN format"""
+        if not isinstance(pin, str):
+            return "PIN must be a string"
         if not pin:
             return "PIN is required"
         
@@ -147,6 +155,13 @@ class InputValidator:
     @staticmethod
     def validate_amount(amount: float, max_amount: float = 100000.0, min_amount: float = 1.0) -> Optional[str]:
         """Validate transaction amount"""
+        if isinstance(amount, bool) or not isinstance(amount, (int, float)):
+            return "Amount must be a finite number"
+
+        amount = float(amount)
+        if not math.isfinite(amount):
+            return "Amount must be a finite number"
+
         if amount < min_amount:
             return f"Amount must be at least Rs. {min_amount}"
         
@@ -159,7 +174,7 @@ class InputValidator:
     def sanitize_text(text: str) -> str:
         """Sanitize text input to prevent XSS"""
         import re
-        if not text:
+        if not isinstance(text, str) or not text:
             return ""
         # Remove potentially dangerous characters
         text = re.sub(r'[<>"\']', '', text)

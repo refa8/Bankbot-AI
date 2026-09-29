@@ -47,6 +47,7 @@ from app.services.query_policy import (
     is_banking_query,
     validate_ollama_response,
 )
+from app.services.account_responses import balance_response, transactions_response
 
 # Initialize security components
 password_hasher = PasswordHasher()
@@ -269,6 +270,7 @@ def get_bot_response(prompt: str) -> str:
     intent = classify_rule_intent(prompt)
 
     if intent == "balance":
+        return balance_response(user)
         import random
         responses = [
             f"Right now, you have **{format_currency(user.get('balance',0))}** in your {user.get('type','account')} account.",
@@ -278,6 +280,7 @@ def get_bot_response(prompt: str) -> str:
         return random.choice(responses) + f"\n\n💳 Credit Score: {user.get('credit_score','N/A')}"
 
     if intent == "transactions":
+        return transactions_response(user, prompt)
         trans = user.get('transactions', [])[:3]
         msg = f"Here are your last {len(trans)} transactions:\n\n"
         for t in trans:

@@ -51,6 +51,7 @@ from app.services.query_policy import (
     normalize_query,
     validate_ollama_response,
 )
+from app.services.account_responses import balance_response, filter_transactions, transactions_response
 from app.utils.formatting import format_currency
 from config import settings
 
@@ -269,6 +270,7 @@ def generate_deterministic_answer(
     intent: Optional[str],
     user_data: Dict[str, Any],
     account_id: str = "1234567890",
+    query: str = "",
 ) -> Optional[str]:
     """
     Generate the deterministic banking answer for a given intent.
@@ -277,6 +279,12 @@ def generate_deterministic_answer(
     """
     if not intent or intent == "llm":
         return None
+
+    if intent == "balance":
+        return balance_response(user_data)
+
+    if intent == "transactions":
+        return transactions_response(user_data, query)
 
     if intent == "balance":
         bal_str = format_currency(user_data.get("balance", 0.0))
@@ -368,6 +376,7 @@ def verify_answer_correctness(
     intent: Optional[str],
     response_text: Optional[str],
     user_data: Dict[str, Any],
+    query: str = "",
 ) -> Tuple[bool, str]:
     """
     Verify if a generated answer is factually correct against mock database data.
@@ -375,6 +384,12 @@ def verify_answer_correctness(
     """
     if response_text is None:
         return False, "No response generated (requires live LLM)"
+
+    if intent == "transactions":
+        expected_response = transactions_response(user_data, query)
+        if response_text != expected_response:
+            return False, "Transaction response did not match the authoritative filtered response"
+        return True, "Authoritative filtered transaction response verified"
 
     if intent == "balance":
         expected_balance = user_data.get("balance", 0.0)
@@ -535,8 +550,15 @@ def evaluate_query(
         factuality_pass = True
     elif act_intent is not None:
         # Deterministic banking queries: verify against mock database
-        actual_response = generate_deterministic_answer(act_intent, user)
-        is_ans_correct, reason = verify_answer_correctness(act_intent, actual_response, user)
+        actual_response = generate_deterministic_answer(act_intent, user, query=query)
+        if act_intent == "transactions" and actual_response and actual_response.startswith(
+            "I need a clearer transaction date range."
+        ):
+            # A clarification is the safe behavior for malformed filters, but
+            # it is not an answer that can be counted as factually correct.
+            is_ans_correct, reason = None, "Transaction filter needs clarification; no factual answer was produced."
+        else:
+            is_ans_correct, reason = verify_answer_correctness(act_intent, actual_response, user, query=query)
         # An answer is only correct if the classifier chose the correct intent AND data matched
         if exp_intent is not None and act_intent != exp_intent:
             answer_correct = False
